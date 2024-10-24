@@ -1,10 +1,9 @@
 import { useFormik } from "formik";
-import { PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
-  categoriesAtom,
-  categoriesAtomSplit,
   Category,
   categoryTypes,
+  useGetAllCategories,
+  useGetCategoriesCollection,
 } from "./category/category";
 import { v7 as uuid } from "uuid";
 import {
@@ -28,11 +27,10 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { Add } from "@mui/icons-material";
-
-const rows: any[] = [];
+import { RxDocument } from "rxdb";
 
 export function Settings() {
-  const categories = useAtomValue(categoriesAtomSplit);
+  const { result: categories } = useGetAllCategories();
   return (
     <>
       <Typography variant="h1" sx={{ textAlign: "center" }}>
@@ -50,7 +48,7 @@ export function Settings() {
           </TableHead>
           <TableBody>
             {categories.map((category) => (
-              <Row category={category} key={category.toString()} />
+              <Row category={category} key={category.id} />
             ))}
           </TableBody>
         </Table>
@@ -59,7 +57,7 @@ export function Settings() {
   );
 }
 
-function Row({ category }: { category: PrimitiveAtom<Category> }) {
+function Row({ category }: { category: RxDocument<Category> }) {
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
@@ -69,19 +67,19 @@ function Row({ category }: { category: PrimitiveAtom<Category> }) {
   const handleClose = () => {
     setOpen(false);
   };
-  const [item, setCategory] = useAtom(category);
+
   return (
     <>
-      <TableRow key={item.id} onClick={handleClickOpen}>
-        <TableCell>{item.icon}</TableCell>
-        <TableCell>{item.name}</TableCell>
-        <TableCell>{categoryTypes[item.type]}</TableCell>
+      <TableRow key={category.id} onClick={handleClickOpen}>
+        <TableCell>{category.icon}</TableCell>
+        <TableCell>{category.name}</TableCell>
+        <TableCell>{categoryTypes[category.type]}</TableCell>
       </TableRow>
       <CategoriesDialog
-        category={item}
+        category={category.toMutableJSON()}
         handleClose={handleClose}
-        setCategory={setCategory}
         open={open}
+        persist={(data) => category.patch(data)}
       />
     </>
   );
@@ -90,18 +88,18 @@ function Row({ category }: { category: PrimitiveAtom<Category> }) {
 function CategoriesDialog({
   category,
   handleClose,
-  setCategory,
   open,
+  persist,
 }: {
   category: Category;
   open: boolean;
-  setCategory: (category: Category) => void;
   handleClose: () => void;
+  persist: (data: Category) => void;
 }) {
   const formik = useFormik({
     initialValues: category,
     onSubmit: (values) => {
-      setCategory({ ...values, id: uuid() });
+      persist(values);
       handleClose();
     },
   });
@@ -173,10 +171,12 @@ function AddLayer() {
   const handleClose = () => {
     setOpen(false);
   };
-  const setCategories = useSetAtom(categoriesAtom);
-  const setCategory = (category: Category) => {
-    setCategories((prev) => [...prev, category]);
-  };
+
+  const collection = useGetCategoriesCollection();
+
+  const persist = (data: Category) =>
+    collection?.insert({ ...data, id: uuid() });
+
   return (
     <>
       <Button variant="contained" color="primary" onClick={handleClickOpen}>
@@ -185,7 +185,7 @@ function AddLayer() {
       <CategoriesDialog
         category={{ name: "", type: "simple", id: "", icon: "" }}
         handleClose={handleClose}
-        setCategory={setCategory}
+        persist={persist}
         open={open}
       />
     </>
