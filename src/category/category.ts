@@ -1,8 +1,10 @@
 import {
   ExtractDocumentTypeFromTypedRxJsonSchema,
+  Override,
+  RxDocument,
   toTypedRxJsonSchema,
 } from "rxdb";
-import { useRxCollection, useRxData } from "rxdb-hooks";
+import { RxQueryResult, useRxCollection, useRxData } from "rxdb-hooks";
 
 export const categoryTypes = { simple: "Einfach" } as const;
 
@@ -35,9 +37,16 @@ export type Category = ExtractDocumentTypeFromTypedRxJsonSchema<
   typeof schemaTyped
 >;
 
-export const useGetAllCategories = () => {
-  return useRxData<Category>("categories", (collection) => collection.find());
-};
+export const useGetAllCategories = () =>
+  useRxData<Category>("categories", (collection) => collection.find());
 
 export const useGetCategoriesCollection = () =>
   useRxCollection<Category>("categories");
+
+export const useGetCategory = (id: string) => {
+  const { result: categories } = useRxData<Category>(
+    "categories",
+    (collection) => collection.findOne({ selector: { id: { $eq: id } } })
+  );
+  return categories[0];
+};
