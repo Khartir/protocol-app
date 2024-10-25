@@ -26,8 +26,9 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { Add } from "@mui/icons-material";
 import { RxDocument } from "rxdb";
+import { useAtom } from "jotai";
+import { addState } from "./Menu";
 
 export function Settings() {
   const { result: categories } = useGetAllCategories();
@@ -162,11 +163,7 @@ function CategoriesDialog({
 }
 
 function AddLayer() {
-  const [open, setOpen] = useState(false);
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
+  const [open, setOpen] = useAtom(addState);
 
   const handleClose = () => {
     setOpen(false);
@@ -179,9 +176,6 @@ function AddLayer() {
 
   return (
     <>
-      <Button variant="contained" color="primary" onClick={handleClickOpen}>
-        <Add />
-      </Button>
       <CategoriesDialog
         category={{ name: "", type: "simple", id: "", icon: "" }}
         handleClose={handleClose}

@@ -24,8 +24,9 @@ import {
 import { useState } from "react";
 import { RxDocument } from "rxdb";
 import { v7 as uuid } from "uuid";
-import { Add } from "@mui/icons-material";
 import { useFormik } from "formik";
+import { useAtom } from "jotai";
+import { addState } from "./Menu";
 export function Home() {
   return <Events />;
 }
@@ -81,11 +82,7 @@ function Row({ event }: { event: RxDocument<Event> }) {
 }
 
 function AddLayer() {
-  const [open, setOpen] = useState(false);
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
+  const [open, setOpen] = useAtom(addState);
 
   const handleClose = () => {
     setOpen(false);
@@ -102,9 +99,6 @@ function AddLayer() {
 
   return (
     <>
-      <Button variant="contained" color="primary" onClick={handleClickOpen}>
-        <Add />
-      </Button>
       <EventsDialog
         event={{ category: "", id: "", timestamp: "" }}
         handleClose={handleClose}
