@@ -16,6 +16,7 @@ import {
   MenuItem,
   Select,
   Stack,
+  FormHelperText,
 } from "@mui/material";
 import {
   Event,
@@ -29,6 +30,7 @@ import { Form, Formik } from "formik";
 import { useAtom } from "jotai";
 import { addState } from "./Menu";
 import dayjs from "dayjs";
+import * as Yup from "yup";
 
 export function Home() {
   return <Events />;
@@ -115,6 +117,10 @@ function AddLayer() {
   );
 }
 
+const validationSchema = Yup.object().shape({
+  category: Yup.string().required("Pflichtfeld"),
+});
+
 function EventsDialog({
   event,
   handleClose,
@@ -142,13 +148,13 @@ function EventsDialog({
             handleClose();
           }}
           initialValues={initialValues}
+          validationSchema={validationSchema}
         >
           {(formik) => (
             <Form>
               <Stack spacing={2}>
                 <FormControl fullWidth>
                   <InputLabel id="category-label-type">Typ</InputLabel>
-
                   <Select
                     fullWidth
                     labelId="category-label-type"
@@ -157,6 +163,9 @@ function EventsDialog({
                     value={formik.values.category}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
+                    error={
+                      formik.touched.category && Boolean(formik.errors.category)
+                    }
                   >
                     {categories.map((category) => (
                       <MenuItem key={category.id} value={category.id}>
@@ -164,6 +173,9 @@ function EventsDialog({
                       </MenuItem>
                     ))}
                   </Select>
+                  {formik.touched.category && formik.errors.category && (
+                    <FormHelperText>{formik.errors.category}</FormHelperText>
+                  )}
                 </FormControl>
                 <DateTimePicker
                   label="Zeitpunkt"

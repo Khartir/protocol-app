@@ -24,11 +24,13 @@ import {
   TableRow,
   TextField,
   Typography,
+  FormHelperText,
 } from "@mui/material";
 import { useState } from "react";
 import { RxDocument } from "rxdb";
 import { useAtom } from "jotai";
 import { addState } from "./Menu";
+import * as Yup from "yup";
 
 export function Settings() {
   const { result: categories } = useGetAllCategories();
@@ -86,6 +88,12 @@ function Row({ category }: { category: RxDocument<Category> }) {
   );
 }
 
+const validationSchema = Yup.object().shape({
+  icon: Yup.string().required("Pflichtfeld"),
+  name: Yup.string().required("Pflichtfeld"),
+  type: Yup.string().required("Pflichtfeld"),
+});
+
 function CategoriesDialog({
   category,
   handleClose,
@@ -106,6 +114,7 @@ function CategoriesDialog({
             handleClose();
           }}
           initialValues={category}
+          validationSchema={validationSchema}
         >
           {(formik) => (
             <Form>
@@ -117,8 +126,8 @@ function CategoriesDialog({
                   value={formik.values.icon}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  // error={formik.touched.email && Boolean(formik.errors.email)}
-                  // helperText={formik.touched.email && formik.errors.email}
+                  error={formik.touched.icon && Boolean(formik.errors.icon)}
+                  helperText={formik.touched.icon && formik.errors.icon}
                 />
                 <TextField
                   fullWidth
@@ -127,8 +136,8 @@ function CategoriesDialog({
                   value={formik.values.name}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  // error={formik.touched.password && Boolean(formik.errors.password)}
-                  // helperText={formik.touched.password && formik.errors.password}
+                  error={formik.touched.name && Boolean(formik.errors.name)}
+                  helperText={formik.touched.name && formik.errors.name}
                 />
                 <FormControl fullWidth>
                   <InputLabel id="category-label-type">Typ</InputLabel>
@@ -141,6 +150,7 @@ function CategoriesDialog({
                     value={formik.values.type}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
+                    error={formik.touched.type && Boolean(formik.errors.type)}
                   >
                     {Object.entries(categoryTypes).map(([value, label]) => (
                       <MenuItem key={value} value={value}>
@@ -148,6 +158,9 @@ function CategoriesDialog({
                       </MenuItem>
                     ))}
                   </Select>
+                  {formik.touched.type && formik.errors.type && (
+                    <FormHelperText>{formik.errors.type}</FormHelperText>
+                  )}
                 </FormControl>
                 <Button variant="outlined" fullWidth onClick={handleClose}>
                   Abbrechen
