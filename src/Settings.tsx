@@ -37,7 +37,7 @@ export function Settings() {
   return (
     <>
       <Typography variant="h1" sx={{ textAlign: "center" }}>
-        Einstellungen
+        Kategorien
       </Typography>
       <AddLayer />
       <TableContainer component={Paper}>
@@ -159,7 +159,7 @@ function CategoriesDialog({
                     ))}
                   </Select>
                   {formik.touched.type && formik.errors.type && (
-                    <FormHelperText>{formik.errors.type}</FormHelperText>
+                    <FormHelperText error>{formik.errors.type}</FormHelperText>
                   )}
                 </FormControl>
                 <Button variant="outlined" fullWidth onClick={handleClose}>

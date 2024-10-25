@@ -1,4 +1,4 @@
-import { useGetAllCategories, useGetCategory } from "./category/category";
+import { useGetCategory } from "./category/category";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import {
   Paper,
@@ -11,12 +11,11 @@ import {
   Button,
   Dialog,
   DialogContent,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   Stack,
-  FormHelperText,
+  CircularProgress,
+  CircularProgressProps,
+  Box,
+  Divider,
 } from "@mui/material";
 import {
   Event,
@@ -32,8 +31,15 @@ import { addState } from "./Menu";
 import dayjs from "dayjs";
 import * as Yup from "yup";
 import { DatePicker } from "@mui/x-date-pickers";
+import { CategorySelect } from "./category/CategorySelect";
+import {
+  Target,
+  useGetTargetsForDate,
+  useGetTargetStatus,
+} from "./category/target";
+import { Delete } from "@mui/icons-material";
 
-const selectedDate = atom(
+export const selectedDate = atom(
   dayjs().hour(0).minute(0).second(0).millisecond(0).valueOf()
 );
 
@@ -41,6 +47,7 @@ export function Home() {
   return (
     <>
       <DateSelect />
+      <Targets />
       <Events />
     </>
   );
@@ -57,12 +64,6 @@ function Events() {
       <AddLayer />
       <TableContainer component={Paper}>
         <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Icon</TableCell>
-              <TableCell>Zeitpunkt</TableCell>
-            </TableRow>
-          </TableHead>
           <TableBody>
             {events.map((event) => (
               <Row event={event} key={event.id} />
@@ -91,6 +92,9 @@ function Row({ event }: { event: RxDocument<Event> }) {
       <TableRow key={event.id} onClick={handleClickOpen}>
         <TableCell>{category?.icon}</TableCell>
         <TableCell>{dayjs(event.timestamp).format()}</TableCell>
+        <TableCell onClick={() => event.remove()}>
+          <Delete />
+        </TableCell>
       </TableRow>
       <EventsDialog
         event={event.toMutableJSON()}
@@ -149,8 +153,6 @@ function EventsDialog({
     timestamp: dayjs(event.timestamp),
   };
 
-  const { result: categories } = useGetAllCategories();
-
   return (
     <Dialog open={open} onClose={handleClose}>
       <DialogContent>
@@ -165,30 +167,7 @@ function EventsDialog({
           {(formik) => (
             <Form>
               <Stack spacing={2}>
-                <FormControl fullWidth>
-                  <InputLabel id="category-label-type">Typ</InputLabel>
-                  <Select
-                    fullWidth
-                    labelId="category-label-type"
-                    name="category"
-                    label="Kategorie"
-                    value={formik.values.category}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={
-                      formik.touched.category && Boolean(formik.errors.category)
-                    }
-                  >
-                    {categories.map((category) => (
-                      <MenuItem key={category.id} value={category.id}>
-                        {category.icon} {category.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {formik.touched.category && formik.errors.category && (
-                    <FormHelperText>{formik.errors.category}</FormHelperText>
-                  )}
-                </FormControl>
+                <CategorySelect />
                 <DateTimePicker
                   label="Zeitpunkt"
                   value={dayjs(formik.values.timestamp)}
@@ -244,12 +223,82 @@ function DateSelect() {
             {
               label: "Heute",
               getValue: () => {
-                return dayjs();
+                return dayjs().hour(0).minute(0).second(0).millisecond(0);
               },
             },
           ],
         },
       }}
     />
+  );
+}
+
+function Targets() {
+  const date = useAtomValue(selectedDate);
+  const targets = useGetTargetsForDate(
+    date,
+    dayjs(date).add(1, "day").valueOf()
+  );
+  return (
+    <TableContainer component={Paper}>
+      <Table>
+        <TableBody>
+          {targets.map((target) => (
+            <TargetRow target={target} key={target.id} />
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+function TargetRow({ target }: { target: RxDocument<Target> }) {
+  const category = useGetCategory(target.category);
+  const collection = useGetEventsCollection();
+
+  const createEvent = () =>
+    collection?.insert({
+      category: target.category,
+      timestamp: Date.now(),
+      id: uuid(),
+    });
+
+  return (
+    <>
+      <TableRow key={target.id} onClick={createEvent}>
+        <TableCell>
+          <CircularProgressWithLabel
+            variant="determinate"
+            value={useGetTargetStatus(target)}
+            label={category?.icon}
+          />
+        </TableCell>
+      </TableRow>
+    </>
+  );
+}
+
+function CircularProgressWithLabel({
+  label,
+  ...props
+}: CircularProgressProps & { value: number; label: string | undefined }) {
+  return (
+    <Box sx={{ position: "relative", display: "inline-flex" }}>
+      <CircularProgress variant="determinate" {...props} />
+      <Box
+        sx={{
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+          position: "absolute",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {label}
+      </Box>
+    </Box>
   );
 }

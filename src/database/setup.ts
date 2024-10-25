@@ -5,6 +5,7 @@ import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
 import { categorySchema } from "../category/category";
 import { useEffect, useState } from "react";
 import { eventSchema } from "../category/event";
+import { targetSchema } from "../category/target";
 
 addRxPlugin(RxDBDevModePlugin);
 
@@ -18,6 +19,7 @@ const initialize = async () => {
   await database.addCollections({
     categories: { schema: categorySchema },
     events: { schema: eventSchema },
+    targets: { schema: targetSchema },
   });
 
   return database;

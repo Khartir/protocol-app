@@ -5,12 +5,10 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Settings } from "./Settings";
 import { Home } from "./Home";
 
-import "@fontsource/roboto/300.css";
-import "@fontsource/roboto/400.css";
-import "@fontsource/roboto/500.css";
-import "@fontsource/roboto/700.css";
+import { Targets } from "./Targets";
+import { Analytics } from "./Analytics";
 
-const router = createBrowserRouter([
+export const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
@@ -23,15 +21,14 @@ const router = createBrowserRouter([
         path: "/settings",
         element: <Settings />,
       },
+      {
+        path: "/target",
+        element: <Targets />,
+      },
+      {
+        path: "/analytics",
+        element: <Analytics />,
+      },
     ],
   },
 ]);
-
-const root = ReactDOM.createRoot(
-  document.getElementById("root") as HTMLElement
-);
-root.render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>
-);

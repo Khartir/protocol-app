@@ -46,4 +46,25 @@ export const useGetEventsForDate = (from: number, to: number) => {
   );
 };
 
+export const useGetEventsForDateAndCategory = (
+  from: number,
+  to: number,
+  category: string
+) => {
+  return useRxData<Event>("events", (collection) =>
+    collection.find({
+      selector: {
+        timestamp: {
+          $gte: from,
+          $lt: to,
+        },
+        category: {
+          $eq: category,
+        },
+      },
+      sort: [{ timestamp: "asc" }],
+    })
+  );
+};
+
 export const useGetEventsCollection = () => useRxCollection<Event>("events");

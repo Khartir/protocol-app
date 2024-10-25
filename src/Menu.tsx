@@ -1,4 +1,4 @@
-import { Add, Home, Settings } from "@mui/icons-material";
+import { Add, Analytics, Flag, Home, Settings } from "@mui/icons-material";
 import {
   BottomNavigation,
   BottomNavigationAction,
@@ -33,11 +33,25 @@ export function Menu() {
           icon={<Home />}
         />
         <BottomNavigationAction
-          label="Einstellungen"
+          label="Ziele"
+          to="/target"
+          component={Link}
+          value="/target"
+          icon={<Flag />}
+        />
+        <BottomNavigationAction
+          label="Kategorien"
           to="/settings"
           value="/settings"
           component={Link}
           icon={<Settings />}
+        />
+        <BottomNavigationAction
+          label="Auswertung"
+          to="/analytics"
+          value="/analytics"
+          component={Link}
+          icon={<Analytics />}
         />
       </BottomNavigation>
     </Paper>
