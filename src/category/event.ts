@@ -32,12 +32,13 @@ export const useGetAllEvents = () => {
   return useRxData<Event>("events", (collection) => collection.find());
 };
 
-export const useGetEventsForDate = (date: number) => {
+export const useGetEventsForDate = (from: number, to: number) => {
   return useRxData<Event>("events", (collection) =>
     collection.find({
       selector: {
         timestamp: {
-          $gte: date,
+          $gte: from,
+          $lt: to,
         },
       },
       sort: [{ timestamp: "asc" }],

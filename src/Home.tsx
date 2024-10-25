@@ -27,18 +27,30 @@ import { useState } from "react";
 import { RxDocument } from "rxdb";
 import { v7 as uuid } from "uuid";
 import { Form, Formik } from "formik";
-import { useAtom } from "jotai";
+import { atom, useAtom, useAtomValue } from "jotai";
 import { addState } from "./Menu";
 import dayjs from "dayjs";
 import * as Yup from "yup";
+import { DatePicker } from "@mui/x-date-pickers";
+
+const selectedDate = atom(
+  dayjs().hour(0).minute(0).second(0).millisecond(0).valueOf()
+);
 
 export function Home() {
-  return <Events />;
+  return (
+    <>
+      <DateSelect />
+      <Events />
+    </>
+  );
 }
 
 function Events() {
+  const date = useAtomValue(selectedDate);
   const { result: events } = useGetEventsForDate(
-    dayjs().hour(0).minute(0).second(0).millisecond(0).valueOf()
+    date,
+    dayjs(date).add(1, "day").valueOf()
   );
   return (
     <>
@@ -213,5 +225,31 @@ function EventsDialog({
         </Formik>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function DateSelect() {
+  const [date, setDate] = useAtom(selectedDate);
+  return (
+    <DatePicker
+      value={dayjs(date)}
+      onAccept={(value) => {
+        if (value) {
+          setDate(value.valueOf());
+        }
+      }}
+      slotProps={{
+        shortcuts: {
+          items: [
+            {
+              label: "Heute",
+              getValue: () => {
+                return dayjs();
+              },
+            },
+          ],
+        },
+      }}
+    />
   );
 }
