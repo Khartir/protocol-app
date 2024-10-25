@@ -16,8 +16,7 @@ export const eventSchema = {
       type: "string",
     },
     timestamp: {
-      type: "string",
-      format: "date-time",
+      type: "number",
     },
   },
   required: ["id", "category", "timestamp"],
@@ -31,6 +30,19 @@ export type Event = ExtractDocumentTypeFromTypedRxJsonSchema<
 
 export const useGetAllEvents = () => {
   return useRxData<Event>("events", (collection) => collection.find());
+};
+
+export const useGetEventsForDate = (date: number) => {
+  return useRxData<Event>("events", (collection) =>
+    collection.find({
+      selector: {
+        timestamp: {
+          $gte: date,
+        },
+      },
+      sort: [{ timestamp: "asc" }],
+    })
+  );
 };
 
 export const useGetEventsCollection = () => useRxCollection<Event>("events");

@@ -1,4 +1,4 @@
-import { useFormik } from "formik";
+import { Form, Formik } from "formik";
 import {
   Category,
   categoryTypes,
@@ -97,66 +97,73 @@ function CategoriesDialog({
   handleClose: () => void;
   persist: (data: Category) => void;
 }) {
-  const formik = useFormik({
-    initialValues: category,
-    onSubmit: (values) => {
-      persist(values);
-      handleClose();
-    },
-  });
-
   return (
     <Dialog open={open} onClose={handleClose}>
       <DialogContent>
-        <form onSubmit={formik.handleSubmit}>
-          <Stack spacing={2}>
-            <TextField
-              fullWidth
-              name="icon"
-              label="Icon"
-              value={formik.values.icon}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              // error={formik.touched.email && Boolean(formik.errors.email)}
-              // helperText={formik.touched.email && formik.errors.email}
-            />
-            <TextField
-              fullWidth
-              name="name"
-              label="Name"
-              value={formik.values.name}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              // error={formik.touched.password && Boolean(formik.errors.password)}
-              // helperText={formik.touched.password && formik.errors.password}
-            />
-            <FormControl fullWidth>
-              <InputLabel id="category-label-type">Typ</InputLabel>
+        <Formik
+          onSubmit={(values) => {
+            persist(values);
+            handleClose();
+          }}
+          initialValues={category}
+        >
+          {(formik) => (
+            <Form>
+              <Stack spacing={2}>
+                <TextField
+                  fullWidth
+                  name="icon"
+                  label="Icon"
+                  value={formik.values.icon}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  // error={formik.touched.email && Boolean(formik.errors.email)}
+                  // helperText={formik.touched.email && formik.errors.email}
+                />
+                <TextField
+                  fullWidth
+                  name="name"
+                  label="Name"
+                  value={formik.values.name}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  // error={formik.touched.password && Boolean(formik.errors.password)}
+                  // helperText={formik.touched.password && formik.errors.password}
+                />
+                <FormControl fullWidth>
+                  <InputLabel id="category-label-type">Typ</InputLabel>
 
-              <Select
-                fullWidth
-                labelId="category-label-type"
-                name="type"
-                label="Typ"
-                value={formik.values.type}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              >
-                {Object.entries(categoryTypes).map(([value, label]) => (
-                  <MenuItem key={value} value={value}>
-                    {label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Button variant="outlined" fullWidth onClick={handleClose}>
-              Abbrechen
-            </Button>
-            <Button color="primary" variant="contained" fullWidth type="submit">
-              Speichern
-            </Button>
-          </Stack>
-        </form>
+                  <Select
+                    fullWidth
+                    labelId="category-label-type"
+                    name="type"
+                    label="Typ"
+                    value={formik.values.type}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                  >
+                    {Object.entries(categoryTypes).map(([value, label]) => (
+                      <MenuItem key={value} value={value}>
+                        {label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <Button variant="outlined" fullWidth onClick={handleClose}>
+                  Abbrechen
+                </Button>
+                <Button
+                  color="primary"
+                  variant="contained"
+                  fullWidth
+                  type="submit"
+                >
+                  Speichern
+                </Button>
+              </Stack>
+            </Form>
+          )}
+        </Formik>
       </DialogContent>
     </Dialog>
   );

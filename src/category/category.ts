@@ -1,10 +1,8 @@
 import {
   ExtractDocumentTypeFromTypedRxJsonSchema,
-  Override,
-  RxDocument,
   toTypedRxJsonSchema,
 } from "rxdb";
-import { RxQueryResult, useRxCollection, useRxData } from "rxdb-hooks";
+import { useRxCollection, useRxData } from "rxdb-hooks";
 
 export const categoryTypes = { simple: "Einfach" } as const;
 

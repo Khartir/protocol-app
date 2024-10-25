@@ -1,4 +1,5 @@
 import { useGetAllCategories, useGetCategory } from "./category/category";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import {
   Paper,
   Table,
@@ -18,21 +19,25 @@ import {
 } from "@mui/material";
 import {
   Event,
-  useGetAllEvents,
   useGetEventsCollection,
+  useGetEventsForDate,
 } from "./category/event";
 import { useState } from "react";
 import { RxDocument } from "rxdb";
 import { v7 as uuid } from "uuid";
-import { useFormik } from "formik";
+import { Form, Formik } from "formik";
 import { useAtom } from "jotai";
 import { addState } from "./Menu";
+import dayjs from "dayjs";
+
 export function Home() {
   return <Events />;
 }
 
 function Events() {
-  const { result: events } = useGetAllEvents();
+  const { result: events } = useGetEventsForDate(
+    dayjs().hour(0).minute(0).second(0).millisecond(0).valueOf()
+  );
   return (
     <>
       <AddLayer />
@@ -41,6 +46,7 @@ function Events() {
           <TableHead>
             <TableRow>
               <TableCell>Icon</TableCell>
+              <TableCell>Zeitpunkt</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -70,13 +76,14 @@ function Row({ event }: { event: RxDocument<Event> }) {
     <>
       <TableRow key={event.id} onClick={handleClickOpen}>
         <TableCell>{category?.icon}</TableCell>
+        <TableCell>{dayjs(event.timestamp).format()}</TableCell>
       </TableRow>
-      {/* <CategoriesDialog
-        category={category.toMutableJSON()}
+      <EventsDialog
+        event={event.toMutableJSON()}
         handleClose={handleClose}
         open={open}
-        persist={(data) => category.patch(data)}
-      /> */}
+        persist={(data) => event.patch(data)}
+      />
     </>
   );
 }
@@ -94,13 +101,12 @@ function AddLayer() {
     collection?.insert({
       ...data,
       id: uuid(),
-      timestamp: new Date().toISOString(),
     });
 
   return (
     <>
       <EventsDialog
-        event={{ category: "", id: "", timestamp: "" }}
+        event={{ category: "", id: "", timestamp: Date.now() }}
         handleClose={handleClose}
         persist={persist}
         open={open}
@@ -120,48 +126,79 @@ function EventsDialog({
   handleClose: () => void;
   persist: (data: Event) => void;
 }) {
-  const formik = useFormik({
-    initialValues: event,
-    onSubmit: (values) => {
-      persist(values);
-      handleClose();
-    },
-  });
+  const initialValues = {
+    ...event,
+    timestamp: dayjs(event.timestamp),
+  };
 
   const { result: categories } = useGetAllCategories();
 
   return (
     <Dialog open={open} onClose={handleClose}>
       <DialogContent>
-        <form onSubmit={formik.handleSubmit}>
-          <Stack spacing={2}>
-            <FormControl fullWidth>
-              <InputLabel id="category-label-type">Typ</InputLabel>
+        <Formik
+          onSubmit={(values) => {
+            persist({ ...values, timestamp: values.timestamp.valueOf() });
+            handleClose();
+          }}
+          initialValues={initialValues}
+        >
+          {(formik) => (
+            <Form>
+              <Stack spacing={2}>
+                <FormControl fullWidth>
+                  <InputLabel id="category-label-type">Typ</InputLabel>
 
-              <Select
-                fullWidth
-                labelId="category-label-type"
-                name="category"
-                label="Kategorie"
-                value={formik.values.category}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              >
-                {categories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    {category.icon} {category.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Button variant="outlined" fullWidth onClick={handleClose}>
-              Abbrechen
-            </Button>
-            <Button color="primary" variant="contained" fullWidth type="submit">
-              Speichern
-            </Button>
-          </Stack>
-        </form>
+                  <Select
+                    fullWidth
+                    labelId="category-label-type"
+                    name="category"
+                    label="Kategorie"
+                    value={formik.values.category}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                  >
+                    {categories.map((category) => (
+                      <MenuItem key={category.id} value={category.id}>
+                        {category.icon} {category.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <DateTimePicker
+                  label="Zeitpunkt"
+                  value={dayjs(formik.values.timestamp)}
+                  onChange={(value) => {
+                    formik.setFieldValue("timestamp", value);
+                  }}
+                  slotProps={{
+                    shortcuts: {
+                      items: [
+                        {
+                          label: "Jetzt",
+                          getValue: () => {
+                            return dayjs();
+                          },
+                        },
+                      ],
+                    },
+                  }}
+                />
+                <Button variant="outlined" fullWidth onClick={handleClose}>
+                  Abbrechen
+                </Button>
+                <Button
+                  color="primary"
+                  variant="contained"
+                  fullWidth
+                  type="submit"
+                >
+                  Speichern
+                </Button>
+              </Stack>
+            </Form>
+          )}
+        </Formik>
       </DialogContent>
     </Dialog>
   );
