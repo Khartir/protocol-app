@@ -6,7 +6,6 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
   Button,
   Dialog,
@@ -15,7 +14,6 @@ import {
   CircularProgress,
   CircularProgressProps,
   Box,
-  Divider,
 } from "@mui/material";
 import {
   Event,
@@ -38,6 +36,7 @@ import {
   useGetTargetStatus,
 } from "./category/target";
 import { Delete } from "@mui/icons-material";
+import { ValueInput } from "./Targets";
 
 export const selectedDate = atom(
   dayjs().hour(0).minute(0).second(0).millisecond(0).valueOf()
@@ -124,7 +123,7 @@ function AddLayer() {
   return (
     <>
       <EventsDialog
-        event={{ category: "", id: "", timestamp: Date.now() }}
+        event={{ category: "", id: "", timestamp: Date.now(), data: "" }}
         handleClose={handleClose}
         persist={persist}
         open={open}
@@ -187,6 +186,7 @@ function EventsDialog({
                     },
                   }}
                 />
+                <ValueInput name="data" />
                 <Button variant="outlined" fullWidth onClick={handleClose}>
                   Abbrechen
                 </Button>
@@ -256,11 +256,13 @@ function TargetRow({ target }: { target: RxDocument<Target> }) {
   const category = useGetCategory(target.category);
   const collection = useGetEventsCollection();
 
+  //todo: prevent future event
   const createEvent = () =>
     collection?.insert({
       category: target.category,
       timestamp: Date.now(),
       id: uuid(),
+      data: "",
     });
 
   return (
@@ -272,6 +274,11 @@ function TargetRow({ target }: { target: RxDocument<Target> }) {
             value={useGetTargetStatus(target)}
             label={category?.icon}
           />
+        </TableCell>
+        <TableCell>
+          {target.name}
+          <br />
+          TODO: Status in Schrift
         </TableCell>
       </TableRow>
     </>

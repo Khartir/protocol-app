@@ -39,6 +39,7 @@ export function Menu() {
           value="/target"
           icon={<Flag />}
         />
+        <BottomNavigationAction />
         <BottomNavigationAction
           label="Kategorien"
           to="/settings"

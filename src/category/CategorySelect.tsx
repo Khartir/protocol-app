@@ -12,7 +12,7 @@ export function CategorySelect() {
   const { result: categories } = useGetAllCategories();
   return (
     <FormControl fullWidth>
-      <InputLabel id="category-label-type">Typ</InputLabel>
+      <InputLabel id="category-label-type">Kategorie</InputLabel>
       <Select
         fullWidth
         labelId="category-label-type"

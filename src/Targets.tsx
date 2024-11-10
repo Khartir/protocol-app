@@ -1,4 +1,4 @@
-import { Form, Formik } from "formik";
+import { Form, Formik, useFormikContext } from "formik";
 import { v7 as uuid } from "uuid";
 import {
   Button,
@@ -32,6 +32,7 @@ import dayjs from "dayjs";
 
 import utc from "dayjs/plugin/utc";
 import { Delete } from "@mui/icons-material";
+import { useGetCategory } from "./category/category";
 
 dayjs.extend(utc);
 
@@ -95,6 +96,7 @@ const validationSchema = Yup.object().shape({
   name: Yup.string().required("Pflichtfeld"),
   category: Yup.string().required("Pflichtfeld"),
   schedule: Yup.string().required("Pflichtfeld"),
+  config: Yup.string(),
 });
 
 function TargetsDialog({
@@ -108,6 +110,12 @@ function TargetsDialog({
   handleClose: () => void;
   persist: (data: Target) => void;
 }) {
+  /*
+  TODO:
+  xmal in der Woche
+
+  value: nicht Wert als Ziel sondern Wert aufzeichen
+  */
   return (
     <Dialog open={open} onClose={handleClose}>
       <DialogContent>
@@ -124,13 +132,13 @@ function TargetsDialog({
               <Stack spacing={2}>
                 <TextField
                   fullWidth
-                  name="name"
-                  label="Beschreibung"
                   value={formik.values.name}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   error={formik.touched.name && Boolean(formik.errors.name)}
                   helperText={formik.touched.name && formik.errors.name}
+                  label="Name"
+                  name="name"
                 />
                 <CategorySelect />
                 <RRuleBuilder
@@ -143,8 +151,8 @@ function TargetsDialog({
                     .millisecond(0)}
                   rruleString={formik.values.schedule}
                   onChange={(value) => formik.setFieldValue("schedule", value)}
-                  enableYearlyInterval={true}
                 />
+                <ValueInput name="config" />
                 <Button variant="outlined" fullWidth onClick={handleClose}>
                   Abbrechen
                 </Button>
@@ -179,11 +187,32 @@ function AddLayer() {
   return (
     <>
       <TargetsDialog
-        target={{ name: "", category: "", id: "", schedule: "" }}
+        target={{ name: "", category: "", id: "", schedule: "", config: "" }}
         handleClose={handleClose}
         persist={persist}
         open={open}
       />
     </>
+  );
+}
+
+export function ValueInput({ name }: { name: string }) {
+  const formik = useFormikContext<{ [name: string]: string }>();
+  const category = useGetCategory(formik.values.category);
+  if (!category || category.type !== "value") {
+    return <></>;
+  }
+
+  return (
+    <TextField
+      fullWidth
+      name={name}
+      label="Wert"
+      value={formik.values[name]}
+      onChange={formik.handleChange}
+      onBlur={formik.handleBlur}
+      error={formik.touched[name] && Boolean(formik.errors[name])}
+      helperText={formik.touched[name] && formik.errors[name]}
+    />
   );
 }

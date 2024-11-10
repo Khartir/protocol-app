@@ -18,8 +18,11 @@ export const eventSchema = {
     timestamp: {
       type: "number",
     },
+    data: {
+      type: "string",
+    },
   },
-  required: ["id", "category", "timestamp"],
+  required: ["id", "category", "timestamp", "data"],
 } as const;
 
 const schemaTyped = toTypedRxJsonSchema(eventSchema);

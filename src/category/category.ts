@@ -4,7 +4,10 @@ import {
 } from "rxdb";
 import { useRxCollection, useRxData } from "rxdb-hooks";
 
-export const categoryTypes = { simple: "Einfach" } as const;
+export const categoryTypes = {
+  todo: "Aufgabe",
+  value: "Mit Messwert",
+} as const;
 
 export const categorySchema = {
   version: 0,
@@ -23,10 +26,13 @@ export const categorySchema = {
     },
     type: {
       type: "string",
-      enum: ["simple"],
+      enum: ["todo", "value"],
+    },
+    config: {
+      type: "string",
     },
   },
-  required: ["id", "name", "type"],
+  required: ["id", "name", "type", "config"],
 } as const;
 
 const schemaTyped = toTypedRxJsonSchema(categorySchema);
