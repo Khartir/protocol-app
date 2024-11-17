@@ -2,6 +2,7 @@ import {
   requriesInput,
   requriesValue,
   useGetCategory,
+  useGetAllCategories,
 } from "./category/category";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import {
@@ -44,6 +45,7 @@ import {
   useGetTargetStatus,
 } from "./category/target";
 import { Delete } from "@mui/icons-material";
+import { UnitSelect, getDefaultUnit, toDefault } from "./UnitSelect";
 
 export const selectedDate = atom(
   dayjs().hour(0).minute(0).second(0).millisecond(0).valueOf()
@@ -162,6 +164,7 @@ function EventsDialog({
   persist: (data: Event) => void;
 }) {
   const date = useAtomValue(selectedDate);
+  const { result: categories } = useGetAllCategories();
   if (
     dayjs().hour(0).minute(0).second(0).millisecond(0).isBefore(dayjs(date))
   ) {
@@ -170,13 +173,30 @@ function EventsDialog({
   const initialValues = {
     ...event,
     timestamp: dayjs(event.timestamp),
+    unit: "",
   };
+
+  const category = useGetCategory(event.category);
+
+  if (category?.type === "valueAccumulative") {
+    initialValues.unit = getDefaultUnit(category.config);
+  }
 
   return (
     <Dialog open={open} onClose={handleClose}>
       <DialogContent>
         <Formik
           onSubmit={(values) => {
+            const category = categories.filter(
+              (category) => category.id === values.category
+            )[0];
+            if (category.type === "valueAccumulative") {
+              values.data = toDefault(
+                category.config,
+                values.unit,
+                values.data
+              ).toString();
+            }
             persist({ ...values, timestamp: values.timestamp.valueOf() });
             handleClose();
           }}
@@ -388,15 +408,18 @@ function ValueInput({ name }: { name: string }) {
   }
 
   return (
-    <TextField
-      fullWidth
-      name={name}
-      label="Wert"
-      value={formik.values[name]}
-      onChange={formik.handleChange}
-      onBlur={formik.handleBlur}
-      error={formik.touched[name] && Boolean(formik.errors[name])}
-      helperText={formik.touched[name] && formik.errors[name]}
-    />
+    <>
+      <TextField
+        fullWidth
+        name={name}
+        label="Wert"
+        value={formik.values[name]}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={formik.touched[name] && Boolean(formik.errors[name])}
+        helperText={formik.touched[name] && formik.errors[name]}
+      />
+      <UnitSelect />
+    </>
   );
 }

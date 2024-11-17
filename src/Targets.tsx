@@ -32,7 +32,8 @@ import dayjs from "dayjs";
 
 import utc from "dayjs/plugin/utc";
 import { Delete } from "@mui/icons-material";
-import { useGetCategory } from "./category/category";
+import { useGetCategory, useGetAllCategories } from "./category/category";
+import { toDefault, UnitSelect } from "./UnitSelect";
 
 dayjs.extend(utc);
 
@@ -110,6 +111,11 @@ function TargetsDialog({
   handleClose: () => void;
   persist: (data: Target) => void;
 }) {
+  const extended = {
+    ...target,
+    unit: "",
+  };
+  const { result: categories } = useGetAllCategories();
   /*
   TODO:
   xmal in der Woche
@@ -120,10 +126,20 @@ function TargetsDialog({
       <DialogContent>
         <Formik
           onSubmit={(values) => {
+            const category = categories.filter(
+              (category) => category.id === values.category
+            )[0];
+            if (category.type === "valueAccumulative") {
+              values.config = toDefault(
+                category.config,
+                values.unit,
+                values.config
+              );
+            }
             persist(values);
             handleClose();
           }}
-          initialValues={target}
+          initialValues={extended}
           validationSchema={validationSchema}
         >
           {(formik) => (
@@ -203,15 +219,18 @@ function ValueInput({ name }: { name: string }) {
   }
 
   return (
-    <TextField
-      fullWidth
-      name={name}
-      label="Wert"
-      value={formik.values[name]}
-      onChange={formik.handleChange}
-      onBlur={formik.handleBlur}
-      error={formik.touched[name] && Boolean(formik.errors[name])}
-      helperText={formik.touched[name] && formik.errors[name]}
-    />
+    <>
+      <TextField
+        fullWidth
+        name={name}
+        label="Wert"
+        value={formik.values[name]}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={formik.touched[name] && Boolean(formik.errors[name])}
+        helperText={formik.touched[name] && formik.errors[name]}
+      />
+      <UnitSelect />
+    </>
   );
 }

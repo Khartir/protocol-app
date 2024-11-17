@@ -32,7 +32,7 @@ import { RxDocument } from "rxdb";
 import { useAtom } from "jotai";
 import { addState } from "./Menu";
 import * as Yup from "yup";
-import { units } from "./unit";
+import { MeasureSelect } from "./UnitSelect";
 
 export function Settings() {
   const { result: categories } = useGetAllCategories();
@@ -164,35 +164,7 @@ function CategoriesDialog({
                     <FormHelperText error>{formik.errors.type}</FormHelperText>
                   )}
                 </FormControl>
-                {requriesValue(formik.values.type) && (
-                  <FormControl fullWidth>
-                    <InputLabel id="category-label-unit">Einheit</InputLabel>
-
-                    <Select
-                      fullWidth
-                      labelId="category-label-unit"
-                      name="config"
-                      label="Einheit"
-                      value={formik.values.config}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      error={
-                        formik.touched.config && Boolean(formik.errors.config)
-                      }
-                    >
-                      {Object.entries(units).map(([value, label]) => (
-                        <MenuItem key={value} value={value}>
-                          {label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {formik.touched.type && formik.errors.type && (
-                      <FormHelperText error>
-                        {formik.errors.type}
-                      </FormHelperText>
-                    )}
-                  </FormControl>
-                )}
+                <MeasureSelect />
                 <Button variant="outlined" fullWidth onClick={handleClose}>
                   Abbrechen
                 </Button>
