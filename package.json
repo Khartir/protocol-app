@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/vite.svg"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
@@ -16,6 +17,7 @@
     "@mui/icons-material": "^6.1.5",
     "@mui/material": "^6.1.5",
     "@types/uuid": "^10.0.0",
+    "@vite-pwa/assets-generator": "^0.2.6",
     "convert": "^5.6.1",
     "dayjs": "^1.11.13",
     "formik": "^2.4.6",
