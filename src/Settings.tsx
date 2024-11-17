@@ -2,7 +2,6 @@ import { Form, Formik } from "formik";
 import {
   Category,
   categoryTypes,
-  requriesValue,
   useGetAllCategories,
   useGetCategoriesCollection,
 } from "./category/category";

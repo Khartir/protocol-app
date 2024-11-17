@@ -1,6 +1,6 @@
 import {
   requriesInput,
-  requriesValue,
+  requriesMeasure,
   useGetCategory,
   useGetAllCategories,
 } from "./category/category";
@@ -403,8 +403,24 @@ function CircularProgressWithLabel({
 function ValueInput({ name }: { name: string }) {
   const formik = useFormikContext<{ [name: string]: string }>();
   const category = useGetCategory(formik.values.category);
-  if (!requriesValue(category?.type)) {
+  if (!requriesInput(category?.type)) {
     return <></>;
+  }
+
+  if (!requriesMeasure(category?.type)) {
+    return (
+      <TextField
+        fullWidth
+        multiline
+        name={name}
+        label="Wert"
+        value={formik.values[name]}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={formik.touched[name] && Boolean(formik.errors[name])}
+        helperText={formik.touched[name] && formik.errors[name]}
+      />
+    );
   }
 
   return (

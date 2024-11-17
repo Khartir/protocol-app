@@ -8,6 +8,7 @@ export const categoryTypes = {
   todo: "Aufgabe",
   value: "Mit einfachem Messwert",
   valueAccumulative: "Mit summiertem Messwert",
+  protocol: "Protokoll",
 } as const;
 
 export const categorySchema = {
@@ -27,7 +28,7 @@ export const categorySchema = {
     },
     type: {
       type: "string",
-      enum: ["todo", "value", "valueAccumulative"],
+      enum: ["todo", "value", "valueAccumulative", "protocol"],
     },
     config: {
       type: "string",
@@ -57,4 +58,5 @@ export const useGetCategory = (id: string) => {
 };
 
 export const requriesInput = (type: string) => !["todo"].includes(type);
-export const requriesValue = (type: string) => !["todo"].includes(type);
+export const requriesMeasure = (type: string) =>
+  !["todo", "protocol"].includes(type);

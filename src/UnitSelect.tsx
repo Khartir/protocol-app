@@ -6,7 +6,7 @@ import {
   FormHelperText,
 } from "@mui/material";
 import { useFormikContext } from "formik";
-import { Category, requriesValue, useGetCategory } from "./category/category";
+import { Category, requriesMeasure, useGetCategory } from "./category/category";
 import { Event } from "./category/event";
 import { Target } from "./category/target";
 
@@ -32,7 +32,7 @@ const defaults = {
 
 export const MeasureSelect = () => {
   const formik = useFormikContext<Category>();
-  if (!requriesValue(formik.values.type)) {
+  if (!requriesMeasure(formik.values.type)) {
     return <></>;
   }
 

@@ -62,6 +62,7 @@ export const useGetTargetStatus = (target: Target) => {
   const category = useGetCategory(target.category);
   switch (category?.type) {
     case "todo":
+    case "protocol":
       return Math.min(
         (events.result.length / getCount(target, from, to)) * 100,
         100
