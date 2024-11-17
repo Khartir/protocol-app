@@ -114,7 +114,6 @@ function TargetsDialog({
   TODO:
   xmal in der Woche
 
-  value: nicht Wert als Ziel sondern Wert aufzeichen
   */
   return (
     <Dialog open={open} onClose={handleClose}>
@@ -196,10 +195,10 @@ function AddLayer() {
   );
 }
 
-export function ValueInput({ name }: { name: string }) {
+function ValueInput({ name }: { name: string }) {
   const formik = useFormikContext<{ [name: string]: string }>();
   const category = useGetCategory(formik.values.category);
-  if (!category || category.type !== "value") {
+  if (!category || category.type !== "valueAccumulative") {
     return <></>;
   }
 

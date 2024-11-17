@@ -67,6 +67,11 @@ export const useGetTargetStatus = (target: Target) => {
         100
       );
     case "value":
+      return Math.min(
+        (events.result.length / getCount(target, from, to)) * 100,
+        100
+      );
+    case "valueAccumulative":
       const sum = events.result.reduce(
         (result, event) => result + Number(event.data),
         0

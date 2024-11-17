@@ -2,6 +2,7 @@ import { Form, Formik } from "formik";
 import {
   Category,
   categoryTypes,
+  requriesValue,
   useGetAllCategories,
   useGetCategoriesCollection,
 } from "./category/category";
@@ -163,7 +164,7 @@ function CategoriesDialog({
                     <FormHelperText error>{formik.errors.type}</FormHelperText>
                   )}
                 </FormControl>
-                {formik.values.type === "value" && (
+                {requriesValue(formik.values.type) && (
                   <FormControl fullWidth>
                     <InputLabel id="category-label-unit">Einheit</InputLabel>
 

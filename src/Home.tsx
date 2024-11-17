@@ -1,4 +1,8 @@
-import { requriesInput, useGetCategory } from "./category/category";
+import {
+  requriesInput,
+  requriesValue,
+  useGetCategory,
+} from "./category/category";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import {
   Paper,
@@ -17,6 +21,7 @@ import {
   Divider,
   Typography,
   Alert,
+  TextField,
 } from "@mui/material";
 import {
   Event,
@@ -26,7 +31,7 @@ import {
 import { useState } from "react";
 import { RxDocument } from "rxdb";
 import { v7 as uuid } from "uuid";
-import { Form, Formik } from "formik";
+import { Form, Formik, useFormikContext } from "formik";
 import { atom, useAtom, useAtomValue } from "jotai";
 import { addState } from "./Menu";
 import dayjs from "dayjs";
@@ -39,7 +44,6 @@ import {
   useGetTargetStatus,
 } from "./category/target";
 import { Delete } from "@mui/icons-material";
-import { ValueInput } from "./Targets";
 
 export const selectedDate = atom(
   dayjs().hour(0).minute(0).second(0).millisecond(0).valueOf()
@@ -373,5 +377,26 @@ function CircularProgressWithLabel({
         {label}
       </Box>
     </Box>
+  );
+}
+
+function ValueInput({ name }: { name: string }) {
+  const formik = useFormikContext<{ [name: string]: string }>();
+  const category = useGetCategory(formik.values.category);
+  if (!requriesValue(category?.type)) {
+    return <></>;
+  }
+
+  return (
+    <TextField
+      fullWidth
+      name={name}
+      label="Wert"
+      value={formik.values[name]}
+      onChange={formik.handleChange}
+      onBlur={formik.handleBlur}
+      error={formik.touched[name] && Boolean(formik.errors[name])}
+      helperText={formik.touched[name] && formik.errors[name]}
+    />
   );
 }
