@@ -28,6 +28,7 @@
     "rxdb": "^15.36.1",
     "rxdb-hooks": "^5.0.2",
     "uuid": "^10.0.0",
+    "vite-plugin-pwa": "^0.21.0",
     "yup": "^1.4.0"
   },
   "devDependencies": {
