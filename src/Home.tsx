@@ -1,4 +1,4 @@
-import { useGetCategory } from "./category/category";
+import { requriesInput, useGetCategory } from "./category/category";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import {
   Paper,
@@ -14,6 +14,9 @@ import {
   CircularProgress,
   CircularProgressProps,
   Box,
+  Divider,
+  Typography,
+  Alert,
 } from "@mui/material";
 import {
   Event,
@@ -46,7 +49,14 @@ export function Home() {
   return (
     <>
       <DateSelect />
+      <Typography variant="h2" align="center">
+        Ziele
+      </Typography>
       <Targets />
+      <Divider />
+      <Typography variant="h2" align="center">
+        Erledigt
+      </Typography>
       <Events />
     </>
   );
@@ -147,6 +157,12 @@ function EventsDialog({
   handleClose: () => void;
   persist: (data: Event) => void;
 }) {
+  const date = useAtomValue(selectedDate);
+  if (
+    dayjs().hour(0).minute(0).second(0).millisecond(0).isBefore(dayjs(date))
+  ) {
+    return <AlertDialog open={open} handleClose={handleClose}></AlertDialog>;
+  }
   const initialValues = {
     ...event,
     timestamp: dayjs(event.timestamp),
@@ -207,6 +223,24 @@ function EventsDialog({
   );
 }
 
+function AlertDialog({
+  open,
+  handleClose,
+}: {
+  open: boolean;
+  handleClose: () => void;
+}) {
+  return (
+    <Dialog open={open} onClose={handleClose}>
+      <DialogContent>
+        <Alert severity="warning">
+          Ein Ziel in der Zukunft kann nicht erledigt werden.
+        </Alert>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function DateSelect() {
   const [date, setDate] = useAtom(selectedDate);
   return (
@@ -255,19 +289,42 @@ function Targets() {
 function TargetRow({ target }: { target: RxDocument<Target> }) {
   const category = useGetCategory(target.category);
   const collection = useGetEventsCollection();
+  const [open, setOpen] = useState(false);
+  const date = useAtomValue(selectedDate);
+  const now = dayjs();
 
-  //todo: prevent future event
-  const createEvent = () =>
-    collection?.insert({
-      category: target.category,
-      timestamp: Date.now(),
-      id: uuid(),
-      data: "",
-    });
+  const event = {
+    category: target.category,
+    timestamp: dayjs(date)
+      .hour(now.hour())
+      .minute(now.minute())
+      .second(now.second())
+      .valueOf(),
+    id: uuid(),
+    data: "",
+  };
+
+  const showDialog =
+    dayjs().hour(0).minute(0).second(0).millisecond(0).isBefore(dayjs(date)) ||
+    requriesInput(category?.type);
+
+  const handleClick = () => {
+    if (showDialog) {
+      setOpen(true);
+      return;
+    }
+    collection?.insert(event);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const persist = (data: Event) => collection?.insert(data);
 
   return (
     <>
-      <TableRow key={target.id} onClick={createEvent}>
+      <TableRow key={target.id} onClick={handleClick}>
         <TableCell>
           <CircularProgressWithLabel
             variant="determinate"
@@ -281,6 +338,15 @@ function TargetRow({ target }: { target: RxDocument<Target> }) {
           TODO: Status in Schrift
         </TableCell>
       </TableRow>
+
+      {showDialog && (
+        <EventsDialog
+          event={event}
+          handleClose={handleClose}
+          open={open}
+          persist={persist}
+        />
+      )}
     </>
   );
 }

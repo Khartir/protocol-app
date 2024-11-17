@@ -54,3 +54,5 @@ export const useGetCategory = (id: string) => {
   );
   return categories[0];
 };
+
+export const requriesInput = (type: string) => !["todo"].includes(type);
