@@ -41,7 +41,7 @@ export function Targets() {
   const { result: targets } = useGetAllTargets();
   return (
     <>
-      <Typography variant="h1" sx={{ textAlign: "center" }}>
+      <Typography variant="h2" sx={{ textAlign: "center" }}>
         Ziele
       </Typography>
       <AddLayer />
@@ -113,7 +113,7 @@ function TargetsDialog({
 }) {
   const extended = {
     ...target,
-    unit: "",
+    unit: "", // set saved value
   };
   const { result: categories } = useGetAllCategories();
   /*
@@ -218,6 +218,7 @@ function ValueInput({ name }: { name: string }) {
     return <></>;
   }
 
+  // todo handle float, text
   return (
     <>
       <TextField

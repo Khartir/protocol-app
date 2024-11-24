@@ -37,7 +37,7 @@ export function Settings() {
   const { result: categories } = useGetAllCategories();
   return (
     <>
-      <Typography variant="h1" sx={{ textAlign: "center" }}>
+      <Typography variant="h2" sx={{ textAlign: "center" }}>
         Kategorien
       </Typography>
       <AddLayer />
@@ -48,6 +48,7 @@ export function Settings() {
               <TableCell>Icon</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Typ</TableCell>
+              {/* add delete */}
             </TableRow>
           </TableHead>
           <TableBody>

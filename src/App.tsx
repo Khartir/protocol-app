@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { Menu } from "./Menu";
-import { CssBaseline, ThemeProvider } from "@mui/material";
+import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { theme } from "./styling/theme";
 import { useDatabase } from "./database/setup";
 import { Provider } from "rxdb-hooks";
@@ -14,9 +14,11 @@ export function App() {
     <Provider db={db}>
       <ThemeProvider theme={theme}>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-          <CssBaseline />
-          <Outlet />
-          <Menu />
+          <Box sx={{ pb: 7.5 }}>
+            <CssBaseline />
+            <Outlet />
+            <Menu />
+          </Box>
         </LocalizationProvider>
       </ThemeProvider>
     </Provider>

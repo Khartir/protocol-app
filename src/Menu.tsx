@@ -12,21 +12,29 @@ export const addState = atom(false);
 
 export function Menu() {
   const setAdd = useSetAtom(addState);
+  const style = { width: "calc(25vw - 1rem)", px: 1, minWidth: 3 };
   return (
     <Paper
       sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
       elevation={3}
     >
       <Fab
-        sx={{ position: "absolute", left: "50%", top: "-50%" }}
+        sx={{
+          position: "absolute",
+          left: "50%",
+          top: "-50%",
+          transform: "translate(-50%)",
+        }}
+        size="medium"
         color="primary"
         onClick={() => setAdd(true)}
       >
         <Add />
       </Fab>
-      <BottomNavigation value={useLocation().pathname}>
+      <BottomNavigation sx={{ width: "100vw" }} value={useLocation().pathname}>
         <BottomNavigationAction
           label="Home"
+          sx={style}
           to="/"
           component={Link}
           value="/"
@@ -34,14 +42,15 @@ export function Menu() {
         />
         <BottomNavigationAction
           label="Ziele"
+          sx={style}
           to="/target"
           component={Link}
           value="/target"
           icon={<Flag />}
         />
-        <BottomNavigationAction />
         <BottomNavigationAction
           label="Kategorien"
+          sx={style}
           to="/settings"
           value="/settings"
           component={Link}
@@ -49,6 +58,7 @@ export function Menu() {
         />
         <BottomNavigationAction
           label="Auswertung"
+          sx={style}
           to="/analytics"
           value="/analytics"
           component={Link}

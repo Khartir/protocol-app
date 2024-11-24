@@ -5,8 +5,10 @@ import {
 import { useRxCollection, useRxData } from "rxdb-hooks";
 
 export const categoryTypes = {
+  // add count
   todo: "Aufgabe",
   value: "Mit einfachem Messwert",
+  // add description/type
   valueAccumulative: "Mit summiertem Messwert",
   protocol: "Protokoll",
 } as const;

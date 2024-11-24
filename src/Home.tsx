@@ -23,6 +23,11 @@ import {
   Typography,
   Alert,
   TextField,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemButton,
 } from "@mui/material";
 import {
   Event,
@@ -77,15 +82,11 @@ function Events() {
   return (
     <>
       <AddLayer />
-      <TableContainer component={Paper}>
-        <Table>
-          <TableBody>
-            {events.map((event) => (
-              <Row event={event} key={event.id} />
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <List>
+        {events.map((event) => (
+          <Row event={event} key={event.id} />
+        ))}
+      </List>
     </>
   );
 }
@@ -104,13 +105,18 @@ function Row({ event }: { event: RxDocument<Event> }) {
   const category = useGetCategory(event.category);
   return (
     <>
-      <TableRow key={event.id} onClick={handleClickOpen}>
-        <TableCell>{category?.icon}</TableCell>
-        <TableCell>{dayjs(event.timestamp).format()}</TableCell>
-        <TableCell onClick={() => event.remove()}>
-          <Delete />
-        </TableCell>
-      </TableRow>
+      <ListItem key={event.id} disablePadding>
+        <ListItemButton onClick={handleClickOpen}>
+          <ListItemIcon>{category?.icon}</ListItemIcon>
+          <ListItemText
+            primary={dayjs(event.timestamp).format("HH:mm")}
+            secondary={event.data}
+          />
+          <ListItemIcon onClick={() => event.remove()}>
+            <Delete />
+          </ListItemIcon>
+        </ListItemButton>
+      </ListItem>
       <EventsDialog
         event={event.toMutableJSON()}
         handleClose={handleClose}
@@ -298,15 +304,11 @@ function Targets() {
     dayjs(date).add(1, "day").valueOf()
   );
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableBody>
-          {targets.map((target) => (
-            <TargetRow target={target} key={target.id} />
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <List>
+      {targets.map((target) => (
+        <TargetRow target={target} key={target.id} />
+      ))}
+    </List>
   );
 }
 
@@ -348,20 +350,18 @@ function TargetRow({ target }: { target: RxDocument<Target> }) {
 
   return (
     <>
-      <TableRow key={target.id} onClick={handleClick}>
-        <TableCell>
-          <CircularProgressWithLabel
-            variant="determinate"
-            value={useGetTargetStatus(target)}
-            label={category?.icon}
-          />
-        </TableCell>
-        <TableCell>
-          {target.name}
-          <br />
-          TODO: Status in Schrift
-        </TableCell>
-      </TableRow>
+      <ListItem key={target.id} disablePadding>
+        <ListItemButton onClick={handleClick}>
+          <ListItemIcon>
+            <CircularProgressWithLabel
+              variant="determinate"
+              value={useGetTargetStatus(target)}
+              label={category?.icon}
+            />
+          </ListItemIcon>
+          <ListItemText primary={target.name} />
+        </ListItemButton>
+      </ListItem>
 
       {showDialog && (
         <EventsDialog
