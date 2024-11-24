@@ -4,14 +4,12 @@ import {
   Button,
   Dialog,
   DialogContent,
-  Paper,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
   Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
@@ -33,7 +31,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { Delete } from "@mui/icons-material";
 import { useGetCategory, useGetAllCategories } from "./category/category";
-import { toDefault, UnitSelect } from "./UnitSelect";
+import { getDefaultUnit, toBest } from "./UnitSelect";
+import { convertMany } from "convert";
 
 dayjs.extend(utc);
 
@@ -41,25 +40,15 @@ export function Targets() {
   const { result: targets } = useGetAllTargets();
   return (
     <>
-      <Typography variant="h2" sx={{ textAlign: "center" }}>
+      <Typography variant="h4" sx={{ textAlign: "center" }}>
         Ziele
       </Typography>
       <AddLayer />
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Beschreibung</TableCell>
-              <TableCell>Löschen</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {targets.map((target) => (
-              <Row target={target} key={target.id} />
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <List>
+        {targets.map((target) => (
+          <Row target={target} key={target.id} />
+        ))}
+      </List>
     </>
   );
 }
@@ -77,12 +66,19 @@ function Row({ target }: { target: RxDocument<Target> }) {
 
   return (
     <>
-      <TableRow key={target.id} onClick={handleClickOpen}>
-        <TableCell>{target.name}</TableCell>
-        <TableCell onClick={() => target.remove()}>
-          <Delete />
-        </TableCell>
-      </TableRow>
+      <ListItem key={target.id}>
+        <ListItemButton onClick={handleClickOpen}>
+          <ListItemText primary={target.name} />
+          <ListItemIcon
+            onClick={(e) => {
+              e.stopPropagation();
+              target.remove();
+            }}
+          >
+            <Delete />
+          </ListItemIcon>
+        </ListItemButton>
+      </ListItem>
       <TargetsDialog
         target={target.toMutableJSON()}
         handleClose={handleClose}
@@ -111,11 +107,16 @@ function TargetsDialog({
   handleClose: () => void;
   persist: (data: Target) => void;
 }) {
-  const extended = {
+  const initialValues = {
     ...target,
-    unit: "", // set saved value
   };
   const { result: categories } = useGetAllCategories();
+
+  const category = useGetCategory(target.category);
+
+  if (category?.type === "valueAccumulative") {
+    initialValues.config = toBest(category, initialValues.config);
+  }
   /*
   TODO:
   xmal in der Woche
@@ -130,16 +131,14 @@ function TargetsDialog({
               (category) => category.id === values.category
             )[0];
             if (category.type === "valueAccumulative") {
-              values.config = toDefault(
-                category.config,
-                values.unit,
-                values.config
+              values.config = convertMany(values.config.replace(",", ".")).to(
+                getDefaultUnit(category)
               );
             }
             persist(values);
             handleClose();
           }}
-          initialValues={extended}
+          initialValues={initialValues}
           validationSchema={validationSchema}
         >
           {(formik) => (
@@ -218,7 +217,6 @@ function ValueInput({ name }: { name: string }) {
     return <></>;
   }
 
-  // todo handle float, text
   return (
     <>
       <TextField
@@ -231,7 +229,6 @@ function ValueInput({ name }: { name: string }) {
         error={formik.touched[name] && Boolean(formik.errors[name])}
         helperText={formik.touched[name] && formik.errors[name]}
       />
-      <UnitSelect />
     </>
   );
 }

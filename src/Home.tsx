@@ -50,7 +50,8 @@ import {
   useGetTargetStatus,
 } from "./category/target";
 import { Delete } from "@mui/icons-material";
-import { UnitSelect, getDefaultUnit, toDefault } from "./UnitSelect";
+import { getDefaultUnit, toBest } from "./UnitSelect";
+import { convertMany } from "convert";
 
 export const selectedDate = atom(
   dayjs().hour(0).minute(0).second(0).millisecond(0).valueOf()
@@ -60,12 +61,12 @@ export function Home() {
   return (
     <>
       <DateSelect />
-      <Typography variant="h2" align="center">
+      <Typography variant="h4" align="center">
         Ziele
       </Typography>
       <Targets />
       <Divider />
-      <Typography variant="h2" align="center">
+      <Typography variant="h4" align="center">
         Erledigt
       </Typography>
       <Events />
@@ -110,9 +111,16 @@ function Row({ event }: { event: RxDocument<Event> }) {
           <ListItemIcon>{category?.icon}</ListItemIcon>
           <ListItemText
             primary={dayjs(event.timestamp).format("HH:mm")}
-            secondary={event.data}
+            secondary={
+              category && toBest(category, event.data).replace(".", ",")
+            }
           />
-          <ListItemIcon onClick={() => event.remove()}>
+          <ListItemIcon
+            onClick={(e) => {
+              e.stopPropagation();
+              event.remove();
+            }}
+          >
             <Delete />
           </ListItemIcon>
         </ListItemButton>
@@ -179,13 +187,12 @@ function EventsDialog({
   const initialValues = {
     ...event,
     timestamp: dayjs(event.timestamp),
-    unit: "",
   };
 
   const category = useGetCategory(event.category);
 
   if (category?.type === "valueAccumulative") {
-    initialValues.unit = getDefaultUnit(category.config);
+    initialValues.data = toBest(category, initialValues.data);
   }
 
   return (
@@ -197,11 +204,9 @@ function EventsDialog({
               (category) => category.id === values.category
             )[0];
             if (category.type === "valueAccumulative") {
-              values.data = toDefault(
-                category.config,
-                values.unit,
-                values.data
-              ).toString();
+              values.data = convertMany(values.data.replace(",", ".")).to(
+                getDefaultUnit(category)
+              );
             }
             persist({ ...values, timestamp: values.timestamp.valueOf() });
             handleClose();
@@ -274,26 +279,26 @@ function AlertDialog({
 function DateSelect() {
   const [date, setDate] = useAtom(selectedDate);
   return (
-    <DatePicker
-      value={dayjs(date)}
-      onAccept={(value) => {
-        if (value) {
-          setDate(value.valueOf());
+    <>
+      <DatePicker
+        value={dayjs(date)}
+        sx={{ width: "10rem" }}
+        onAccept={(value) => {
+          if (value) {
+            setDate(value.valueOf());
+          }
+        }}
+      />
+      <Button
+        variant="outlined"
+        size="large"
+        onClick={() =>
+          setDate(dayjs().hour(0).minute(0).second(0).millisecond(0).valueOf())
         }
-      }}
-      slotProps={{
-        shortcuts: {
-          items: [
-            {
-              label: "Heute",
-              getValue: () => {
-                return dayjs().hour(0).minute(0).second(0).millisecond(0);
-              },
-            },
-          ],
-        },
-      }}
-    />
+      >
+        Heute
+      </Button>
+    </>
   );
 }
 
@@ -407,35 +412,17 @@ function ValueInput({ name }: { name: string }) {
     return <></>;
   }
 
-  if (!requriesMeasure(category?.type)) {
-    return (
-      <TextField
-        fullWidth
-        multiline
-        name={name}
-        label="Wert"
-        value={formik.values[name]}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched[name] && Boolean(formik.errors[name])}
-        helperText={formik.touched[name] && formik.errors[name]}
-      />
-    );
-  }
-
   return (
-    <>
-      <TextField
-        fullWidth
-        name={name}
-        label="Wert"
-        value={formik.values[name]}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched[name] && Boolean(formik.errors[name])}
-        helperText={formik.touched[name] && formik.errors[name]}
-      />
-      <UnitSelect />
-    </>
+    <TextField
+      fullWidth
+      multiline
+      name={name}
+      label="Wert"
+      value={formik.values[name]}
+      onChange={formik.handleChange}
+      onBlur={formik.handleBlur}
+      error={formik.touched[name] && Boolean(formik.errors[name])}
+      helperText={formik.touched[name] && formik.errors[name]}
+    />
   );
 }

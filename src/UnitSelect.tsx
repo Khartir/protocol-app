@@ -6,9 +6,7 @@ import {
   FormHelperText,
 } from "@mui/material";
 import { useFormikContext } from "formik";
-import { Category, requriesMeasure, useGetCategory } from "./category/category";
-import { Event } from "./category/event";
-import { Target } from "./category/target";
+import { Category, requriesMeasure } from "./category/category";
 
 import convert, { Unit } from "convert";
 
@@ -16,12 +14,6 @@ const measures = {
   volume: "Volumen",
   time: "Zeit",
   mass: "Masse",
-};
-
-const units = {
-  volume: ["ml", "l"],
-  time: ["s", "min", "h"],
-  mass: ["g", "kg"],
 };
 
 const defaults = {
@@ -63,45 +55,37 @@ export const MeasureSelect = () => {
   );
 };
 
-export const UnitSelect = () => {
-  const formik = useFormikContext<
-    (Event | Target) & {
-      unit: string;
-    }
-  >();
-  const category = useGetCategory(formik.values.category);
-
-  return (
-    <FormControl fullWidth>
-      <InputLabel id="category-label-unit">Einheit</InputLabel>
-
-      <Select
-        fullWidth
-        labelId="category-label-unit"
-        name="unit"
-        label="Einheit"
-        value={formik.values.unit}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched.unit && Boolean(formik.errors.unit)}
-      >
-        {units[category?.config]?.map((value) => (
-          <MenuItem key={value} value={value}>
-            {value}
-          </MenuItem>
-        ))}
-      </Select>
-      {formik.touched.unit && formik.errors.unit && (
-        <FormHelperText error>{formik.errors.unit}</FormHelperText>
-      )}
-    </FormControl>
-  );
-};
-
-export const toDefault = (measure: string, unit: Unit, value: string) => {
+export const toDefault = (
+  category: Category,
+  unit: Unit,
+  value: string | Number
+) => {
   return Math.floor(
-    convert(Number.parseInt(value), unit).to(getDefaultUnit(measure))
+    convert(Number.parseInt(value), unit).to(getDefaultUnit(category))
   );
 };
 
-export const getDefaultUnit = (measure: string) => defaults[measure];
+export const toBest = (category: Category, value: string | Number) => {
+  if (!category.config || isNaN(Number.parseInt(value))) {
+    return "";
+  }
+
+  const unit = getDefaultUnit(category);
+
+  const result = convert(Number.parseInt(value), unit).to("best");
+
+  const whole = Math.floor(result.quantity);
+
+  if (whole === result.quantity) {
+    return result.toString().replace(".", ",");
+  }
+
+  result.quantity = whole;
+
+  const remainder =
+    Number.parseInt(value) - toDefault(category, result.unit, whole);
+
+  return whole + result.unit + " " + toBest(category, remainder);
+};
+
+export const getDefaultUnit = (category: Category) => defaults[category.config];

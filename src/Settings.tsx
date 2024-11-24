@@ -13,18 +13,16 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
-  Paper,
   Select,
   Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
   FormHelperText,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import { useState } from "react";
 import { RxDocument } from "rxdb";
@@ -37,27 +35,15 @@ export function Settings() {
   const { result: categories } = useGetAllCategories();
   return (
     <>
-      <Typography variant="h2" sx={{ textAlign: "center" }}>
+      <Typography variant="h4" sx={{ textAlign: "center" }}>
         Kategorien
       </Typography>
       <AddLayer />
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Icon</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Typ</TableCell>
-              {/* add delete */}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {categories.map((category) => (
-              <Row category={category} key={category.id} />
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <List>
+        {categories.map((category) => (
+          <Row category={category} key={category.id} />
+        ))}
+      </List>
     </>
   );
 }
@@ -75,11 +61,13 @@ function Row({ category }: { category: RxDocument<Category> }) {
 
   return (
     <>
-      <TableRow key={category.id} onClick={handleClickOpen}>
-        <TableCell>{category.icon}</TableCell>
-        <TableCell>{category.name}</TableCell>
-        <TableCell>{categoryTypes[category.type]}</TableCell>
-      </TableRow>
+      <ListItem key={category.id}>
+        <ListItemButton onClick={handleClickOpen}>
+          <ListItemIcon>{category.icon}</ListItemIcon>
+          <ListItemText primary={category.name} />
+          {/* add delete */}
+        </ListItemButton>
+      </ListItem>
       <CategoriesDialog
         category={category.toMutableJSON()}
         handleClose={handleClose}
