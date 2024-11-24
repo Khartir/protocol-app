@@ -104,6 +104,13 @@ function Row({ event }: { event: RxDocument<Event> }) {
   };
 
   const category = useGetCategory(event.category);
+
+  let secondary = event.data;
+
+  if (category?.type === "valueAccumulative") {
+    secondary = category && toBest(category, event.data).replace(".", ",");
+  }
+
   return (
     <>
       <ListItem key={event.id} disablePadding>
@@ -111,9 +118,7 @@ function Row({ event }: { event: RxDocument<Event> }) {
           <ListItemIcon>{category?.icon}</ListItemIcon>
           <ListItemText
             primary={dayjs(event.timestamp).format("HH:mm")}
-            secondary={
-              category && toBest(category, event.data).replace(".", ",")
-            }
+            secondary={secondary}
           />
           <ListItemIcon
             onClick={(e) => {
