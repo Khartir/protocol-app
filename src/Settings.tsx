@@ -16,7 +16,6 @@ import {
   Select,
   Stack,
   TextField,
-  Typography,
   FormHelperText,
   List,
   ListItem,
@@ -27,17 +26,16 @@ import {
 import { useState } from "react";
 import { RxDocument } from "rxdb";
 import { useAtom } from "jotai";
-import { addState } from "./Menu";
 import * as Yup from "yup";
-import { MeasureSelect } from "./UnitSelect";
+import { MeasureSelect } from "./MeasureSelect";
+import { Heading } from "./styling/Heading";
+import { addState } from "./app/Menu";
 
 export function Settings() {
   const { result: categories } = useGetAllCategories();
   return (
     <>
-      <Typography variant="h4" sx={{ textAlign: "center" }}>
-        Kategorien
-      </Typography>
+      <Heading>Kategorien</Heading>
       <AddLayer />
       <List>
         {categories.map((category) => (

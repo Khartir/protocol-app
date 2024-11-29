@@ -1,8 +1,4 @@
-import { Typography } from "@mui/material";
+import { Heading } from "./styling/Heading";
 export function Analytics() {
-  return (
-    <Typography variant="h4" sx={{ textAlign: "center" }}>
-      Auswertungen
-    </Typography>
-  );
+  return <Heading>Auswertungen</Heading>;
 }

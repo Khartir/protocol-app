@@ -7,7 +7,7 @@ import { useRxCollection, useRxData } from "rxdb-hooks";
 import { useGetEventsForDateAndCategory } from "./event";
 import { useAtomValue } from "jotai";
 import dayjs from "dayjs";
-import { selectedDate } from "../Home";
+import { selectedDate } from "../home/Home";
 import { useGetCategory } from "./category";
 
 export const targetSchema = {

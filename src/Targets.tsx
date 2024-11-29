@@ -11,12 +11,10 @@ import {
   ListItemText,
   Stack,
   TextField,
-  Typography,
 } from "@mui/material";
 import { useState } from "react";
 import { RxDocument } from "rxdb";
 import { useAtom } from "jotai";
-import { addState } from "./Menu";
 import * as Yup from "yup";
 import {
   Target,
@@ -31,8 +29,10 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { Delete } from "@mui/icons-material";
 import { useGetCategory, useGetAllCategories } from "./category/category";
-import { getDefaultUnit, toBest } from "./UnitSelect";
+import { getDefaultUnit, toBest } from "./MeasureSelect";
 import { convertMany } from "convert";
+import { Heading } from "./styling/Heading";
+import { addState } from "./app/Menu";
 
 dayjs.extend(utc);
 
@@ -40,9 +40,7 @@ export function Targets() {
   const { result: targets } = useGetAllTargets();
   return (
     <>
-      <Typography variant="h4" sx={{ textAlign: "center" }}>
-        Ziele
-      </Typography>
+      <Heading>Ziele</Heading>
       <AddLayer />
       <List>
         {targets.map((target) => (

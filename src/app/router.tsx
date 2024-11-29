@@ -1,10 +1,9 @@
+import { Analytics } from "../Analytics";
+import { Home } from "../home/Home";
+import { Settings } from "../Settings";
+import { Targets } from "../Targets";
 import { App } from "./App";
 import { createBrowserRouter } from "react-router-dom";
-import { Settings } from "./Settings";
-import { Home } from "./Home";
-
-import { Targets } from "./Targets";
-import { Analytics } from "./Analytics";
 
 export const router = createBrowserRouter(
   [
