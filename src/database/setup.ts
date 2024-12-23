@@ -6,10 +6,13 @@ import { categorySchema } from "../category/category";
 import { useEffect, useState } from "react";
 import { eventSchema } from "../category/event";
 import { targetSchema } from "../category/target";
+import { RxDBJsonDumpPlugin } from "rxdb/plugins/json-dump";
 
 if (import.meta.env.DEV) {
   addRxPlugin(RxDBDevModePlugin);
 }
+
+addRxPlugin(RxDBJsonDumpPlugin);
 
 const initialize = async () => {
   const storage = getRxStorageDexie();
@@ -28,7 +31,7 @@ const initialize = async () => {
   return database;
 };
 
-type Database = Awaited<ReturnType<typeof initialize>>;
+export type Database = Awaited<ReturnType<typeof initialize>>;
 
 export const useDatabase = () => {
   const [db, setDb] = useState<Database>();

@@ -22,6 +22,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  styled,
 } from "@mui/material";
 import { useState } from "react";
 import { RxDocument } from "rxdb";
@@ -30,9 +31,25 @@ import * as Yup from "yup";
 import { MeasureSelect } from "./MeasureSelect";
 import { Heading } from "./styling/Heading";
 import { addState } from "./app/Menu";
+import { Database, useDatabase } from "./database/setup";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 
 export function Settings() {
   const { result: categories } = useGetAllCategories();
+  const db = useDatabase();
   return (
     <>
       <Heading>Kategorien</Heading>
@@ -42,6 +59,28 @@ export function Settings() {
           <Row category={category} key={category.id} />
         ))}
       </List>
+      <Button
+        variant="outlined"
+        startIcon={<FileDownloadIcon />}
+        onClick={() => download(db)}
+      >
+        Backup erstellen
+      </Button>
+      <Button
+        component="label"
+        role={undefined}
+        variant="contained"
+        tabIndex={-1}
+        startIcon={<FileUploadIcon />}
+      >
+        Backup einspielen
+        <VisuallyHiddenInput
+          type="file"
+          accept="application/json"
+          onChange={(event) => upload(db, event.target.files)}
+          multiple
+        />
+      </Button>
     </>
   );
 }
@@ -194,3 +233,38 @@ function AddLayer() {
     </>
   );
 }
+
+const download = async (db: Database | undefined) => {
+  if (!db) {
+    return;
+  }
+
+  const data = await db.exportJSON();
+  const file = new File([JSON.stringify(data)], "backup.json", {
+    type: "application/json",
+  });
+  const exportUrl = URL.createObjectURL(file);
+  const element = document.createElement("a");
+  element.setAttribute("href", exportUrl);
+  element.setAttribute("download", file.name);
+
+  element.style.display = "none";
+  document.body.appendChild(element);
+
+  element.click();
+  URL.revokeObjectURL(exportUrl);
+
+  document.body.removeChild(element);
+};
+
+const upload = async (db: Database | undefined, files: FileList | null) => {
+  if (!db || !files) {
+    return;
+  }
+  const data = await files.item(0)?.text();
+  if (!data) {
+    console.error("empty data");
+    return;
+  }
+  await db.importJSON(JSON.parse(data));
+};
