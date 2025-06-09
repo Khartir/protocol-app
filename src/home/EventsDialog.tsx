@@ -2,6 +2,8 @@ import {
   useGetCategory,
   useGetAllCategories,
   requriesInput,
+  Category,
+  useGetCategories,
 } from "../category/category";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import {
@@ -16,7 +18,7 @@ import { Event } from "../category/event";
 import { Form, Formik, useFormikContext } from "formik";
 import { useAtomValue } from "jotai";
 import dayjs from "dayjs";
-import { CategorySelect } from "../category/CategorySelect";
+import { AllCategorySelect, CategorySelect } from "../category/CategorySelect";
 import { getDefaultUnit, toBest } from "../MeasureSelect";
 import { convertMany } from "convert";
 import { selectedDate } from "./Home";
@@ -47,6 +49,7 @@ export function EventsDialog({
   const initialValues = {
     ...event,
     timestamp: dayjs(event.timestamp),
+    childCategory: "",
   };
 
   const category = useGetCategory(event.category);
@@ -59,7 +62,7 @@ export function EventsDialog({
     <Dialog open={open} onClose={handleClose}>
       <DialogContent>
         <Formik
-          onSubmit={(values) => {
+          onSubmit={({ childCategory, ...values }) => {
             const category = categories.filter(
               (category) => category.id === values.category
             )[0];
@@ -67,6 +70,9 @@ export function EventsDialog({
               values.data = convertMany(values.data.replace(",", ".")).to(
                 getDefaultUnit(category)
               );
+            }
+            if ((category.children ?? []).length > 0 && "" !== childCategory) {
+              values.category = childCategory;
             }
             persist({ ...values, timestamp: values.timestamp.valueOf() });
             handleClose();
@@ -77,7 +83,8 @@ export function EventsDialog({
           {(formik) => (
             <Form>
               <Stack spacing={2}>
-                <CategorySelect />
+                <AllCategorySelect />
+                <ChildCategorySelectWrapper />
                 <DateTimePicker
                   label="Zeitpunkt"
                   value={dayjs(formik.values.timestamp)}
@@ -156,4 +163,18 @@ function ValueInput({ name }: { name: string }) {
       helperText={formik.touched[name] && formik.errors[name]}
     />
   );
+}
+
+function ChildCategorySelectWrapper() {
+  const { values } = useFormikContext<Event>();
+  const category = useGetCategory(values.category);
+  if ((category?.children ?? []).length === 0) {
+    return "";
+  }
+  return <ChildCategorySelect category={category} />;
+}
+
+function ChildCategorySelect({ category }: { category: Category }) {
+  const categories = useGetCategories(category.children ?? []);
+  return <CategorySelect categories={categories} name="childCategory" />;
 }

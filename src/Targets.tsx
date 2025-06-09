@@ -21,7 +21,7 @@ import {
   useGetAllTargets,
   useGetTargetsCollection,
 } from "./category/target";
-import { CategorySelect } from "./category/CategorySelect";
+import { AllCategorySelect } from "./category/CategorySelect";
 import { RRuleBuilder } from "react-rrule-builder-ts";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
@@ -152,7 +152,7 @@ function TargetsDialog({
                   label="Name"
                   name="name"
                 />
-                <CategorySelect />
+                <AllCategorySelect />
                 <RRuleBuilder
                   dateAdapter={AdapterDayjs}
                   datePickerInitialDate={dayjs()

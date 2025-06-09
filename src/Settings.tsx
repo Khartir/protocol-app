@@ -1,9 +1,10 @@
-import { Form, Formik } from "formik";
+import { Form, Formik, useFormikContext } from "formik";
 import {
   Category,
   categoryTypes,
   useGetAllCategories,
   useGetCategoriesCollection,
+  useGetPossibleChildren,
 } from "./category/category";
 import { v7 as uuid } from "uuid";
 import {
@@ -34,6 +35,7 @@ import { addState } from "./app/Menu";
 import { Database, useDatabase } from "./database/setup";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
+import { CategorySelect } from "./category/CategorySelect";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -190,6 +192,7 @@ function CategoriesDialog({
                   )}
                 </FormControl>
                 <MeasureSelect />
+                <ChildrenSelectWrapper />
                 <Button variant="outlined" fullWidth onClick={handleClose}>
                   Abbrechen
                 </Button>
@@ -207,6 +210,33 @@ function CategoriesDialog({
         </Formik>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function ChildrenSelectWrapper() {
+  const { values } = useFormikContext<Category>();
+  if (!values.type || !values.config) {
+    return "";
+  }
+
+  return <ChildrenSelect />;
+}
+
+function ChildrenSelect() {
+  const { values } = useFormikContext<Category>();
+
+  const categories = useGetPossibleChildren(
+    values.type,
+    values.config,
+    values.id
+  );
+
+  if (0 === categories.length) {
+    return "";
+  }
+
+  return (
+    <CategorySelect categories={categories} name="children" multiple={true} />
   );
 }
 

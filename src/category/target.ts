@@ -58,22 +58,17 @@ export const useGetTargetsForDate = (from: number, to: number) => {
 export const useGetTargetStatus = (target: Target) => {
   const from = useAtomValue(selectedDate);
   const to = dayjs(from).add(1, "day").valueOf();
-  const events = useGetEventsForDateAndCategory(from, to, target.category);
   const category = useGetCategory(target.category);
+  const events = useGetEventsForDateAndCategory(from, to, category);
+
   switch (category?.type) {
     case "todo":
     case "protocol":
-      return Math.min(
-        (events.result.length / getCount(target, from, to)) * 100,
-        100
-      );
+      return Math.min((events.length / getCount(target, from, to)) * 100, 100);
     case "value":
-      return Math.min(
-        (events.result.length / getCount(target, from, to)) * 100,
-        100
-      );
+      return Math.min((events.length / getCount(target, from, to)) * 100, 100);
     case "valueAccumulative":
-      const sum = events.result.reduce(
+      const sum = events.reduce(
         (result, event) => result + Number(event.data),
         0
       );

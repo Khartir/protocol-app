@@ -1,8 +1,10 @@
 import {
   ExtractDocumentTypeFromTypedRxJsonSchema,
+  MangoQuerySelector,
   toTypedRxJsonSchema,
 } from "rxdb";
 import { useRxCollection, useRxData } from "rxdb-hooks";
+import { Category } from "./category";
 export const eventSchema = {
   version: 0,
   primaryKey: "id",
@@ -52,22 +54,31 @@ export const useGetEventsForDate = (from: number, to: number) => {
 export const useGetEventsForDateAndCategory = (
   from: number,
   to: number,
-  category: string
+  category: Category | undefined
 ) => {
-  return useRxData<Event>("events", (collection) =>
+  const selector: MangoQuerySelector<Event> = {
+    timestamp: {
+      $gte: from,
+      $lt: to,
+    },
+  };
+  if (0 === (category?.children ?? []).length) {
+    selector.category = {
+      $eq: category?.id,
+    };
+  } else {
+    selector.category = {
+      $in: category?.children,
+    };
+  }
+  const { result: events } = useRxData<Event>("events", (collection) =>
     collection.find({
-      selector: {
-        timestamp: {
-          $gte: from,
-          $lt: to,
-        },
-        category: {
-          $eq: category,
-        },
-      },
+      selector,
       sort: [{ timestamp: "asc" }],
     })
   );
+
+  return events;
 };
 
 export const useGetEventsCollection = () => useRxCollection<Event>("events");
