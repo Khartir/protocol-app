@@ -41,11 +41,6 @@ export function EventsDialog({
 }) {
   const date = useAtomValue(selectedDate);
   const { result: categories } = useGetAllCategories();
-  if (
-    dayjs().hour(0).minute(0).second(0).millisecond(0).isBefore(dayjs(date))
-  ) {
-    return <AlertDialog open={open} handleClose={handleClose}></AlertDialog>;
-  }
   const initialValues = {
     ...event,
     timestamp: dayjs(event.timestamp),
@@ -53,6 +48,12 @@ export function EventsDialog({
   };
 
   const category = useGetCategory(event.category);
+
+  if (
+    dayjs().hour(0).minute(0).second(0).millisecond(0).isBefore(dayjs(date))
+  ) {
+    return <AlertDialog open={open} handleClose={handleClose}></AlertDialog>;
+  }
 
   if (category?.type === "valueAccumulative") {
     initialValues.data = toBest(category, initialValues.data);

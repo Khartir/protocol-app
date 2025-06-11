@@ -9,6 +9,7 @@ import { useAtomValue } from "jotai";
 import dayjs from "dayjs";
 import { selectedDate } from "../home/Home";
 import { useGetCategory } from "./category";
+import { toBest } from "../MeasureSelect";
 
 export const targetSchema = {
   version: 0,
@@ -60,19 +61,30 @@ export const useGetTargetStatus = (target: Target) => {
   const to = dayjs(from).add(1, "day").valueOf();
   const category = useGetCategory(target.category);
   const events = useGetEventsForDateAndCategory(from, to, category);
+  let expected: number;
 
   switch (category?.type) {
     case "todo":
     case "protocol":
-      return Math.min((events.length / getCount(target, from, to)) * 100, 100);
     case "value":
-      return Math.min((events.length / getCount(target, from, to)) * 100, 100);
+      expected = getCount(target, from, to);
+      return {
+        value: events.length,
+        percentage: Math.min((events.length / expected) * 100, 100),
+        expected,
+      };
     case "valueAccumulative":
       const sum = events.reduce(
         (result, event) => result + Number(event.data),
         0
       );
-      return Math.min(100, (sum / Number(target.config)) * 100);
+      return {
+        value: toBest(category, sum).replace(".", ","),
+        percentage: Math.min(100, (sum / Number(target.config)) * 100),
+        expected: toBest(category, target.config).replace(".", ","),
+      };
+    default:
+      return { value: "", percentage: 0, target: "" };
   }
 };
 

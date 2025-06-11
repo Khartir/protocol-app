@@ -61,18 +61,25 @@ export const toDefault = (
   value: string | Number
 ) => {
   return Math.floor(
-    convert(Number.parseInt(value), unit).to(getDefaultUnit(category))
+    convert(Number.parseInt(value.toString()), unit).to(
+      getDefaultUnit(category)
+    )
   );
 };
 
-export const toBest = (category: Category, value: string | Number) => {
-  if (!category.config || isNaN(Number.parseInt(value))) {
+export const toBest = (category: Category, value: string | Number): string => {
+  const intValue = Number.parseInt(value.toString());
+  if (!category.config || isNaN(intValue)) {
     return "";
   }
 
   const unit = getDefaultUnit(category);
 
-  const result = convert(Number.parseInt(value), unit).to("best");
+  const result = convert(intValue, unit).to("best");
+
+  if ("s" !== unit) {
+    return result.toString();
+  }
 
   const whole = Math.floor(result.quantity);
 
@@ -82,8 +89,7 @@ export const toBest = (category: Category, value: string | Number) => {
 
   result.quantity = whole;
 
-  const remainder =
-    Number.parseInt(value) - toDefault(category, result.unit, whole);
+  const remainder = intValue - toDefault(category, result.unit, whole);
 
   return whole + result.unit + " " + toBest(category, remainder);
 };
