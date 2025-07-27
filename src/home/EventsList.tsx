@@ -22,6 +22,7 @@ import { Delete } from "@mui/icons-material";
 import { toBest } from "../MeasureSelect";
 import { EventsDialog } from "./EventsDialog";
 import { addState } from "../app/Menu";
+import { useDeleteConfirm } from "../ConfirmDelete";
 export function EventsList() {
   const date = useAtomValue(selectedDate);
   const { result: events } = useGetEventsForDate(
@@ -52,6 +53,8 @@ function Row({ event }: { event: RxDocument<Event> }) {
     setOpen(false);
   };
 
+  const { openDeleteConfirm, ConfirmDelete } = useDeleteConfirm(event);
+
   const category = useGetCategory(event.category);
 
   let secondary = event.data;
@@ -72,7 +75,7 @@ function Row({ event }: { event: RxDocument<Event> }) {
           <ListItemIcon
             onClick={(e) => {
               e.stopPropagation();
-              event.remove();
+              openDeleteConfirm();
             }}
           >
             <Delete />
@@ -85,6 +88,7 @@ function Row({ event }: { event: RxDocument<Event> }) {
         open={open}
         persist={(data) => event.patch(data)}
       />
+      <ConfirmDelete />
     </>
   );
 }

@@ -33,6 +33,7 @@ import { getDefaultUnit, toBest } from "./MeasureSelect";
 import { convertMany } from "convert";
 import { Heading } from "./styling/Heading";
 import { addState } from "./app/Menu";
+import { useDeleteConfirm } from "./ConfirmDelete";
 
 dayjs.extend(utc);
 
@@ -62,6 +63,8 @@ function Row({ target }: { target: RxDocument<Target> }) {
     setOpen(false);
   };
 
+  const { openDeleteConfirm, ConfirmDelete } = useDeleteConfirm(target);
+
   return (
     <>
       <ListItem key={target.id}>
@@ -70,7 +73,7 @@ function Row({ target }: { target: RxDocument<Target> }) {
           <ListItemIcon
             onClick={(e) => {
               e.stopPropagation();
-              target.remove();
+              openDeleteConfirm();
             }}
           >
             <Delete />
@@ -83,6 +86,7 @@ function Row({ target }: { target: RxDocument<Target> }) {
         open={open}
         persist={(data) => target.patch(data)}
       />
+      <ConfirmDelete />
     </>
   );
 }
