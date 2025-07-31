@@ -15,7 +15,7 @@ export const categoryTypes = {
 } as const;
 
 const categorySchema = {
-  version: 1,
+  version: 2,
   primaryKey: "id",
   type: "object",
   properties: {
@@ -41,6 +41,10 @@ const categorySchema = {
       uniqueItems: true,
       items: { type: "string" },
     },
+    inverted: {
+      type: "boolean",
+      default: false,
+    },
   },
   required: ["id", "name", "type", "config"],
 } as const;
@@ -55,6 +59,7 @@ export const categoryCollection = {
   schema: categorySchema,
   migrationStrategies: {
     1: (old: Category) => old,
+    2: (old: Category) => old,
   },
 };
 

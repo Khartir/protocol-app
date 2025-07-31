@@ -77,22 +77,27 @@ function Row({ target }: { target: RxDocument<Target> }) {
 
   const persist = (data: Event) => collection?.insert(data);
 
-  const { value, percentage, expected } = useGetTargetStatus(target);
+  const { value, percentage, expected, color } = useGetTargetStatus(target);
+  let secondary = value;
+  if (!!expected) {
+    secondary += " von " + expected;
+  }
+
   return (
     <>
       <ListItem key={target.id} disablePadding>
         <ListItemButton onClick={handleClick}>
           <ListItemIcon>
             <CircularProgressWithLabel
+              sx={{
+                color,
+              }}
               variant="determinate"
               value={percentage}
               label={category?.icon}
             />
           </ListItemIcon>
-          <ListItemText
-            primary={target.name}
-            secondary={value + " von " + expected}
-          />
+          <ListItemText primary={target.name} secondary={secondary} />
         </ListItemButton>
       </ListItem>
 

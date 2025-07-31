@@ -24,6 +24,8 @@ import {
   ListItemIcon,
   ListItemText,
   styled,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import { useState } from "react";
 import { RxDocument } from "rxdb";
@@ -191,6 +193,21 @@ function CategoriesDialog({
                     <FormHelperText error>{formik.errors.type}</FormHelperText>
                   )}
                 </FormControl>
+                {formik.values.type === "valueAccumulative" && (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="inverted"
+                        onChange={(e) => {
+                          formik.setFieldValue("inverted", e.target.checked);
+                        }}
+                        checked={formik.values.inverted ?? false}
+                        onBlur={formik.handleBlur}
+                      />
+                    }
+                    label="Als Obergrenze"
+                  />
+                )}
                 <MeasureSelect />
                 <ChildrenSelectWrapper />
                 <Button variant="outlined" fullWidth onClick={handleClose}>
