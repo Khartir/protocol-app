@@ -36,6 +36,7 @@ export const targetSchema = {
   required: ["id", "category", "schedule", "config"],
 } as const;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const schemaTyped = toTypedRxJsonSchema(targetSchema);
 
 export type Target = ExtractDocumentTypeFromTypedRxJsonSchema<

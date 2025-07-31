@@ -49,6 +49,7 @@ const categorySchema = {
   required: ["id", "name", "type", "config"],
 } as const;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const schemaTyped = toTypedRxJsonSchema(categorySchema);
 
 export type Category = ExtractDocumentTypeFromTypedRxJsonSchema<

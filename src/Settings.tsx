@@ -34,10 +34,11 @@ import * as Yup from "yup";
 import { MeasureSelect } from "./MeasureSelect";
 import { Heading } from "./styling/Heading";
 import { addState } from "./app/Menu";
-import { Database, useDatabase } from "./database/setup";
+import { Database } from "./database/setup";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import { CategorySelect } from "./category/CategorySelect";
+import { useRxDB } from "rxdb-hooks";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -53,7 +54,7 @@ const VisuallyHiddenInput = styled("input")({
 
 export function Settings() {
   const { result: categories } = useGetAllCategories();
-  const db = useDatabase();
+  const db = useRxDB();
   return (
     <>
       <Heading>Kategorien</Heading>

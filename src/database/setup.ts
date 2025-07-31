@@ -1,6 +1,6 @@
 import { RxDBDevModePlugin } from "rxdb/plugins/dev-mode";
 
-import { addRxPlugin, createRxDatabase } from "rxdb";
+import { addRxPlugin, createRxDatabase, RxStorage } from "rxdb";
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
 import { categoryCollection } from "../category/category";
 import { useEffect, useState } from "react";
@@ -8,6 +8,7 @@ import { eventSchema } from "../category/event";
 import { targetSchema } from "../category/target";
 import { RxDBJsonDumpPlugin } from "rxdb/plugins/json-dump";
 import { RxDBMigrationSchemaPlugin } from "rxdb/plugins/migration-schema";
+import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv";
 
 if (import.meta.env.DEV) {
   addRxPlugin(RxDBDevModePlugin);
@@ -17,11 +18,11 @@ addRxPlugin(RxDBJsonDumpPlugin);
 addRxPlugin(RxDBMigrationSchemaPlugin);
 
 const initialize = async () => {
-  const storage = getRxStorageDexie();
+  const storage = getStorage();
   const database = await createRxDatabase({
     name: "healthapp",
     storage,
-    ignoreDuplicate: true,
+    ignoreDuplicate: import.meta.env.DEV,
   });
 
   await database.addCollections({
@@ -44,3 +45,11 @@ export const useDatabase = () => {
 
   return db;
 };
+
+function getStorage() {
+  let storage: RxStorage<unknown, unknown> = getRxStorageDexie();
+  if (import.meta.env.DEV) {
+    storage = wrappedValidateAjvStorage({ storage });
+  }
+  return storage;
+}

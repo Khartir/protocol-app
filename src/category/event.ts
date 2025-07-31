@@ -27,6 +27,7 @@ export const eventSchema = {
   required: ["id", "category", "timestamp", "data"],
 } as const;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const schemaTyped = toTypedRxJsonSchema(eventSchema);
 
 export type Event = ExtractDocumentTypeFromTypedRxJsonSchema<
