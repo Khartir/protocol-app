@@ -20,7 +20,7 @@ export function Home() {
   );
 }
 
-function DateSelect() {
+export function DateSelect() {
   const [date, setDate] = useAtom(selectedDate);
   return (
     <>

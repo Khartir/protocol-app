@@ -9,6 +9,7 @@ import { targetSchema } from "../category/target";
 import { RxDBJsonDumpPlugin } from "rxdb/plugins/json-dump";
 import { RxDBMigrationSchemaPlugin } from "rxdb/plugins/migration-schema";
 import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv";
+import { graphCollection } from "../analytics/graph";
 
 if (import.meta.env.DEV) {
   addRxPlugin(RxDBDevModePlugin);
@@ -29,6 +30,7 @@ const initialize = async () => {
     categories: categoryCollection,
     events: { schema: eventSchema },
     targets: { schema: targetSchema },
+    graphs: graphCollection,
   });
 
   return database;

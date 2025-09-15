@@ -68,9 +68,9 @@ export function EventsDialog({
               (category) => category.id === values.category
             )[0];
             if (category.type === "valueAccumulative") {
-              values.data = convertMany(values.data.replace(",", ".")).to(
-                getDefaultUnit(category)
-              );
+              values.data = convertMany(values.data.replace(",", "."))
+                .to(getDefaultUnit(category))
+                .toString();
             }
             if ((category.children ?? []).length > 0 && "" !== childCategory) {
               values.category = childCategory;
