@@ -65,7 +65,7 @@ export const useGetEventsForDateAndCategory = (
   };
   if (0 === (category?.children ?? []).length) {
     selector.category = {
-      $eq: category?.id,
+      $eq: category?.id ?? "",
     };
   } else {
     selector.category = {

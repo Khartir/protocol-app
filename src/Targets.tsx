@@ -133,9 +133,9 @@ function TargetsDialog({
               (category) => category.id === values.category
             )[0];
             if (category.type === "valueAccumulative") {
-              values.config = convertMany(values.config.replace(",", ".")).to(
-                getDefaultUnit(category)
-              );
+              values.config = convertMany(values.config.replace(",", "."))
+                .to(getDefaultUnit(category))
+                .toString();
             }
             persist(values);
             handleClose();
