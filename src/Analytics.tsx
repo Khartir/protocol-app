@@ -260,7 +260,7 @@ function LineGraph({ graph }: { graph: Graph }) {
   const to = useAtomValue(selectedDate);
   const data = useGetEventsForDateAndCategory(
     dayjs(to).subtract(Number.parseInt(graph.range), "seconds").valueOf(),
-    to,
+    dayjs(to).endOf("day").valueOf(),
     category
   );
   if (!category) {

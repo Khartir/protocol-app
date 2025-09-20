@@ -69,7 +69,7 @@ export const useGetEventsForDateAndCategory = (
     };
   } else {
     selector.category = {
-      $in: category?.children,
+      $in: [...(category?.children ?? []), category?.id ?? ""],
     };
   }
   const { result: events } = useRxData<Event>("events", (collection) =>

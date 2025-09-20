@@ -5,9 +5,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 import { TargetList } from "./TargetList";
 import { EventsList } from "./EventsList";
 
-export const selectedDate = atom(
-  dayjs().hour(0).minute(0).second(0).millisecond(0).valueOf()
-);
+export const selectedDate = atom(dayjs().startOf("day").valueOf());
 
 export function Home() {
   return (
