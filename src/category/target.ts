@@ -116,7 +116,11 @@ export const useGetTargetStatus = (
 
 const getCount = (target: Target, from: number, to: number) => {
   const rule = RRule.fromString(target.schedule);
-  return rule.between(new Date(from), new Date(to)).length;
+  // sub 1 second, because the from date is not inclusive
+  // convert to utc because rrule requires utc and we work in local time
+  const fromDate = dayjs(from).tz("utc", true).subtract(1, "s");
+  const toDate = dayjs(to).tz("utc", true);
+  return rule.between(fromDate.toDate(), toDate.toDate()).length;
 };
 
 function getColor(category: Category, percentage: number) {
