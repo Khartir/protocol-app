@@ -317,7 +317,7 @@ function LineGraph({ graph }: { graph: Graph }) {
       };
     } else {
       colorMap.thresholds.unshift(lowerLimit);
-      colorMap.colors.unshift("red");
+      colorMap.colors.unshift("orange");
     }
   }
 
