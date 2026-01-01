@@ -6,9 +6,7 @@ import {
   Stack,
   TextField,
   List,
-  Typography,
   ListItem,
-  ListItemButton,
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
@@ -24,29 +22,33 @@ import {
   useGetAllGraphs,
   useGetGraphsCollection,
 } from "./analytics/graph";
-import { eventSchema, useGetEventsForDateAndCategory } from "./category/event";
-import convert, { convertMany } from "convert";
+import { useGetEventsForDateAndCategory } from "./category/event";
+import convert, { convertMany, Unit } from "convert";
 import dayjs from "dayjs";
-import { useGetCategory } from "./category/category";
-import { LineChart } from "@mui/x-charts/LineChart";
+import { Category, useGetCategory } from "./category/category";
+import { LineChart, LineSeries } from "@mui/x-charts/LineChart";
 import { Delete, Edit } from "@mui/icons-material";
 import { useState } from "react";
 import { RxDocument } from "rxdb";
 import { useDeleteConfirm } from "./ConfirmDelete";
 import { DateSelect, selectedDate } from "./home/Home";
 import { getDefaultUnit } from "./MeasureSelect";
-import { LineSeries } from "../node_modules/@mui/x-charts/esm/LineChart/LineChart.d.ts";
-import {
-  ContinuousColorConfig,
-  PiecewiseColorConfig,
-} from "../node_modules/@mui/x-charts/esm/models/colorMapping.js";
+import { PiecewiseColorConfig } from "../node_modules/@mui/x-charts/esm/models/colorMapping.js";
+
+// Helper to handle convert's different return types:
+// .to("best") returns { quantity, unit }, .to(specificUnit) returns number
+function toQuantity(
+  converted: number | { quantity: number; unit: Unit }
+): number {
+  return typeof converted === "number" ? converted : converted.quantity;
+}
 
 function aggregateEventsByDay(
   events: { timestamp: number; data: string }[],
   fromDate: dayjs.Dayjs,
   toDate: dayjs.Dayjs,
-  category: { config: string },
-  targetUnit?: string
+  category: Category,
+  targetUnit?: Unit
 ): { x: Date; y: number }[] {
   // Initialize all days in range with 0
   const dailyTotals = new Map<string, number>();
@@ -75,7 +77,7 @@ function aggregateEventsByDay(
     .map(([dateKey, value]) => ({
       x: dayjs(dateKey).toDate(),
       y: defaultUnit
-        ? convert(value, defaultUnit).to(targetUnit ?? "best").quantity
+        ? toQuantity(convert(value, defaultUnit).to(targetUnit ?? "best"))
         : value,
     }));
 }
@@ -273,7 +275,7 @@ function Row({ graph }: { graph: RxDocument<Graph> }) {
           <Delete />
         </ListItemIcon>
       </ListItem>
-      <Graph graph={graph} />
+      <Graphs graph={graph} />
       <AnalyticsDialog
         graph={graph.toMutableJSON()}
         handleClose={handleClose}
@@ -285,7 +287,7 @@ function Row({ graph }: { graph: RxDocument<Graph> }) {
   );
 }
 
-function Graph({ graph }: { graph: Graph }) {
+function Graphs({ graph }: { graph: Graph }) {
   switch (graph.type) {
     case "line":
       return <LineGraph graph={graph} />;
@@ -312,11 +314,15 @@ function LineGraph({ graph }: { graph: Graph }) {
   const isAccumulative = category.type === "valueAccumulative";
 
   // Determine target unit from limits (if set) for consistent units
-  let targetUnit: string | undefined;
+  let targetUnit: Unit | undefined;
   if (graph.config?.upperLimit) {
-    targetUnit = convertMany(graph.config.upperLimit.replace(",", ".")).units;
+    targetUnit = convertMany(graph.config.upperLimit.replace(",", ".")).to(
+      "best"
+    ).unit;
   } else if (graph.config?.lowerLimit) {
-    targetUnit = convertMany(graph.config.lowerLimit.replace(",", ".")).units;
+    targetUnit = convertMany(graph.config.lowerLimit.replace(",", ".")).to(
+      "best"
+    ).unit;
   }
 
   // Branch based on category type
@@ -326,7 +332,9 @@ function LineGraph({ graph }: { graph: Graph }) {
         try {
           return {
             x: dayjs(event.timestamp).toDate(),
-            y: convertMany(event.data.replace(",", ".")).to(targetUnit ?? "best").quantity,
+            y: toQuantity(
+              convertMany(event.data.replace(",", ".")).to(targetUnit ?? "best")
+            ),
           };
         } catch (e) {
           return {
@@ -341,7 +349,7 @@ function LineGraph({ graph }: { graph: Graph }) {
   if (graph.config?.upperLimit) {
     const upperLimit = convertMany(
       graph.config?.upperLimit.replace(",", ".")
-    ).quantity;
+    ).to("best").quantity;
     series.push({
       data: new Array(dataSet.length).fill(upperLimit),
       showMark: false,
@@ -356,9 +364,11 @@ function LineGraph({ graph }: { graph: Graph }) {
   }
 
   if (graph.config?.lowerLimit) {
-    const lowerLimit = convertMany(
-      graph.config?.lowerLimit.replace(",", ".")
-    ).to(targetUnit ?? "best").quantity;
+    const lowerLimit = toQuantity(
+      convertMany(graph.config?.lowerLimit.replace(",", ".")).to(
+        targetUnit ?? "best"
+      )
+    );
     series.push({
       data: new Array(dataSet.length).fill(lowerLimit),
       showMark: false,
