@@ -41,6 +41,42 @@ import {
   PiecewiseColorConfig,
 } from "../node_modules/@mui/x-charts/esm/models/colorMapping.js";
 
+function aggregateEventsByDay(
+  events: { timestamp: number; data: string }[],
+  fromDate: dayjs.Dayjs,
+  toDate: dayjs.Dayjs,
+  category: { config: string }
+): { x: Date; y: number }[] {
+  // Initialize all days in range with 0
+  const dailyTotals = new Map<string, number>();
+  let currentDay = fromDate.startOf("day");
+  const endDay = toDate.startOf("day");
+  while (currentDay.isBefore(endDay) || currentDay.isSame(endDay, "day")) {
+    dailyTotals.set(currentDay.format("YYYY-MM-DD"), 0);
+    currentDay = currentDay.add(1, "day");
+  }
+
+  // Sum events by day (data stored as raw number in default unit)
+  events.forEach((event) => {
+    const dayKey = dayjs(event.timestamp).format("YYYY-MM-DD");
+    if (dailyTotals.has(dayKey)) {
+      const eventValue = Number(event.data);
+      if (!isNaN(eventValue)) {
+        dailyTotals.set(dayKey, (dailyTotals.get(dayKey) || 0) + eventValue);
+      }
+    }
+  });
+
+  // Convert to array with unit conversion
+  const defaultUnit = getDefaultUnit(category);
+  return Array.from(dailyTotals.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([dateKey, value]) => ({
+      x: dayjs(dateKey).toDate(),
+      y: defaultUnit ? convert(value, defaultUnit).to("best").quantity : value,
+    }));
+}
+
 export function Analytics() {
   const { result: graphs } = useGetAllGraphs();
   return (
@@ -258,29 +294,36 @@ function Graph({ graph }: { graph: Graph }) {
 function LineGraph({ graph }: { graph: Graph }) {
   const category = useGetCategory(graph.category);
   const to = useAtomValue(selectedDate);
+  const fromDate = dayjs(to).subtract(Number.parseInt(graph.range), "seconds");
+  const toDate = dayjs(to).endOf("day");
+
   const data = useGetEventsForDateAndCategory(
-    dayjs(to).subtract(Number.parseInt(graph.range), "seconds").valueOf(),
-    dayjs(to).endOf("day").valueOf(),
+    fromDate.valueOf(),
+    toDate.valueOf(),
     category
   );
   if (!category) {
     return "";
   }
   const series: LineSeries[] = [{ dataKey: "y" }];
+  const isAccumulative = category.type === "valueAccumulative";
 
-  const dataSet = data.map((event) => {
-    try {
-      return {
-        x: dayjs(event.timestamp).toDate(),
-        y: convertMany(event.data.replace(",", ".")).to("best").quantity,
-      };
-    } catch (e) {
-      return {
-        x: dayjs(event.timestamp).toDate(),
-        y: 0,
-      };
-    }
-  });
+  // Branch based on category type
+  const dataSet = isAccumulative
+    ? aggregateEventsByDay(data, fromDate, toDate, category)
+    : data.map((event) => {
+        try {
+          return {
+            x: dayjs(event.timestamp).toDate(),
+            y: convertMany(event.data.replace(",", ".")).to("best").quantity,
+          };
+        } catch (e) {
+          return {
+            x: dayjs(event.timestamp).toDate(),
+            y: 0,
+          };
+        }
+      });
 
   let colorMap: PiecewiseColorConfig | undefined = undefined;
 
@@ -328,7 +371,10 @@ function LineGraph({ graph }: { graph: Graph }) {
         {
           dataKey: "x",
           scaleType: "time",
-          valueFormatter: (date) => dayjs(date).format("HH:mm DD.MM."),
+          valueFormatter: (date) =>
+            isAccumulative
+              ? dayjs(date).format("DD.MM.")
+              : dayjs(date).format("HH:mm DD.MM."),
         },
       ]}
       yAxis={[
