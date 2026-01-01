@@ -45,7 +45,8 @@ function aggregateEventsByDay(
   events: { timestamp: number; data: string }[],
   fromDate: dayjs.Dayjs,
   toDate: dayjs.Dayjs,
-  category: { config: string }
+  category: { config: string },
+  targetUnit?: string
 ): { x: Date; y: number }[] {
   // Initialize all days in range with 0
   const dailyTotals = new Map<string, number>();
@@ -73,7 +74,9 @@ function aggregateEventsByDay(
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([dateKey, value]) => ({
       x: dayjs(dateKey).toDate(),
-      y: defaultUnit ? convert(value, defaultUnit).to("best").quantity : value,
+      y: defaultUnit
+        ? convert(value, defaultUnit).to(targetUnit ?? "best").quantity
+        : value,
     }));
 }
 
@@ -308,14 +311,22 @@ function LineGraph({ graph }: { graph: Graph }) {
   const series: LineSeries[] = [{ dataKey: "y" }];
   const isAccumulative = category.type === "valueAccumulative";
 
+  // Determine target unit from limits (if set) for consistent units
+  let targetUnit: string | undefined;
+  if (graph.config?.upperLimit) {
+    targetUnit = convertMany(graph.config.upperLimit.replace(",", ".")).units;
+  } else if (graph.config?.lowerLimit) {
+    targetUnit = convertMany(graph.config.lowerLimit.replace(",", ".")).units;
+  }
+
   // Branch based on category type
   const dataSet = isAccumulative
-    ? aggregateEventsByDay(data, fromDate, toDate, category)
+    ? aggregateEventsByDay(data, fromDate, toDate, category, targetUnit)
     : data.map((event) => {
         try {
           return {
             x: dayjs(event.timestamp).toDate(),
-            y: convertMany(event.data.replace(",", ".")).to("best").quantity,
+            y: convertMany(event.data.replace(",", ".")).to(targetUnit ?? "best").quantity,
           };
         } catch (e) {
           return {
@@ -330,7 +341,7 @@ function LineGraph({ graph }: { graph: Graph }) {
   if (graph.config?.upperLimit) {
     const upperLimit = convertMany(
       graph.config?.upperLimit.replace(",", ".")
-    ).to("best").quantity;
+    ).quantity;
     series.push({
       data: new Array(dataSet.length).fill(upperLimit),
       showMark: false,
@@ -347,7 +358,7 @@ function LineGraph({ graph }: { graph: Graph }) {
   if (graph.config?.lowerLimit) {
     const lowerLimit = convertMany(
       graph.config?.lowerLimit.replace(",", ".")
-    ).to("best").quantity;
+    ).to(targetUnit ?? "best").quantity;
     series.push({
       data: new Array(dataSet.length).fill(lowerLimit),
       showMark: false,
