@@ -11,7 +11,7 @@ export const graphTypes = {
 } as const;
 
 const graphSchema = {
-  version: 0,
+  version: 1,
   primaryKey: "id",
   type: "object",
   properties: {
@@ -48,7 +48,9 @@ export type Graph = ExtractDocumentTypeFromTypedRxJsonSchema<
 
 export const graphCollection = {
   schema: graphSchema,
-  migrationStrategies: {},
+  migrationStrategies: {
+    1: (oldDoc: Graph) => oldDoc,
+  },
 };
 
 export const useGetAllGraphs = () =>
