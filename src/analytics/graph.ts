@@ -6,7 +6,7 @@ import { useRxCollection, useRxData } from "rxdb-hooks";
 
 export const graphTypes = {
   bar: "Balken-Diagramm",
-  line: "linien-Diagramm",
+  line: "Linien-Diagramm",
   table: "Tabelle",
 } as const;
 

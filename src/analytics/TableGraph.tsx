@@ -29,7 +29,7 @@ export function TableGraph({ graph }: TableGraphProps) {
 
   const category = useGetCategory(graph.category);
   const childCategories = useGetCategories(category?.children ?? []);
-  const { result: events } = useGetEventsForDateAndCategory(from, to, category);
+  const events = useGetEventsForDateAndCategory(from, to, category);
 
   if (!category) {
     return <Typography color="error">Kategorie nicht gefunden</Typography>;
