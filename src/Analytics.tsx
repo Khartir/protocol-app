@@ -9,6 +9,10 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import * as Yup from "yup";
 import { AllCategorySelect } from "./category/CategorySelect";
@@ -19,9 +23,11 @@ import { addState } from "./app/Menu";
 import { v7 as uuid } from "uuid";
 import {
   Graph,
+  graphTypes,
   useGetAllGraphs,
   useGetGraphsCollection,
 } from "./analytics/graph";
+import { TableGraph } from "./analytics/TableGraph";
 import { useGetEventsForDateAndCategory } from "./category/event";
 import convert, { convertMany, Unit } from "convert";
 import dayjs from "dayjs";
@@ -186,6 +192,22 @@ function AnalyticsDialog({
                   label="Name"
                   name="name"
                 />
+                <FormControl fullWidth>
+                  <InputLabel id="type-label">Typ</InputLabel>
+                  <Select
+                    labelId="type-label"
+                    name="type"
+                    label="Typ"
+                    value={formik.values.type}
+                    onChange={formik.handleChange}
+                  >
+                    {Object.entries(graphTypes).map(([value, label]) => (
+                      <MenuItem key={value} value={value}>
+                        {label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <AllCategorySelect />
                 <TextField
                   fullWidth
@@ -198,36 +220,40 @@ function AnalyticsDialog({
                   placeholder="7d, 1w"
                   name="range"
                 />
-                <TextField
-                  fullWidth
-                  value={formik.values.upperLimit}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={
-                    formik.touched.upperLimit &&
-                    Boolean(formik.errors.upperLimit)
-                  }
-                  helperText={
-                    formik.touched.upperLimit && formik.errors.upperLimit
-                  }
-                  label="Obergrenze"
-                  name="upperLimit"
-                />
-                <TextField
-                  fullWidth
-                  value={formik.values.lowerLimit}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={
-                    formik.touched.lowerLimit &&
-                    Boolean(formik.errors.lowerLimit)
-                  }
-                  helperText={
-                    formik.touched.lowerLimit && formik.errors.lowerLimit
-                  }
-                  label="Untergrenze"
-                  name="lowerLimit"
-                />
+                {formik.values.type !== "table" && (
+                  <>
+                    <TextField
+                      fullWidth
+                      value={formik.values.upperLimit}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={
+                        formik.touched.upperLimit &&
+                        Boolean(formik.errors.upperLimit)
+                      }
+                      helperText={
+                        formik.touched.upperLimit && formik.errors.upperLimit
+                      }
+                      label="Obergrenze"
+                      name="upperLimit"
+                    />
+                    <TextField
+                      fullWidth
+                      value={formik.values.lowerLimit}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={
+                        formik.touched.lowerLimit &&
+                        Boolean(formik.errors.lowerLimit)
+                      }
+                      helperText={
+                        formik.touched.lowerLimit && formik.errors.lowerLimit
+                      }
+                      label="Untergrenze"
+                      name="lowerLimit"
+                    />
+                  </>
+                )}
                 <Button variant="outlined" fullWidth onClick={handleClose}>
                   Abbrechen
                 </Button>
@@ -293,6 +319,8 @@ function Graphs({ graph }: { graph: Graph }) {
       return <LineGraph graph={graph} />;
     case "bar":
       return <BarGraph graph={graph} />;
+    case "table":
+      return <TableGraph graph={graph} />;
   }
 }
 
