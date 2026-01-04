@@ -28,8 +28,9 @@ import dayjs from "dayjs";
 
 import utc from "dayjs/plugin/utc";
 import { Delete } from "@mui/icons-material";
-import { useGetCategory, useGetAllCategories } from "./category/category";
+import { useGetCategory, useGetAllCategories, requriesMeasure } from "./category/category";
 import { getDefaultUnit, toBest } from "./MeasureSelect";
+import { validateMeasurement } from "./measurementValidation";
 import { convertMany } from "convert";
 import { Heading } from "./styling/Heading";
 import { addState } from "./app/Menu";
@@ -132,6 +133,13 @@ function TargetsDialog({
             const category = categories.filter(
               (category) => category.id === values.category
             )[0];
+            // Validierung vor Konvertierung
+            if (requriesMeasure(category?.type) && values.config) {
+              const result = validateMeasurement(values.config, category.config);
+              if (result !== true) {
+                return;
+              }
+            }
             if (category.type === "valueAccumulative") {
               values.config = convertMany(values.config.replace(",", "."))
                 .to(getDefaultUnit(category))
@@ -215,9 +223,21 @@ function AddLayer() {
 function ValueInput({ name }: { name: string }) {
   const formik = useFormikContext<{ [name: string]: string }>();
   const category = useGetCategory(formik.values.category);
-  if (!category || category.type !== "valueAccumulative") {
+  if (!category || !requriesMeasure(category.type)) {
     return <></>;
   }
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    formik.handleBlur(e);
+
+    if (formik.values[name]) {
+      const result = validateMeasurement(formik.values[name], category?.config);
+      if (result !== true) {
+        // setTimeout stellt sicher, dass setFieldError nach Formiks interner Validierung läuft
+        setTimeout(() => formik.setFieldError(name, result), 0);
+      }
+    }
+  };
 
   return (
     <>
@@ -227,7 +247,7 @@ function ValueInput({ name }: { name: string }) {
         label="Wert"
         value={formik.values[name]}
         onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
+        onBlur={handleBlur}
         error={formik.touched[name] && Boolean(formik.errors[name])}
         helperText={formik.touched[name] && formik.errors[name]}
       />

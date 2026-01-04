@@ -2,9 +2,11 @@ import {
   useGetCategory,
   useGetAllCategories,
   requriesInput,
+  requriesMeasure,
   Category,
   useGetCategories,
 } from "../category/category";
+import { validateMeasurement } from "../measurementValidation";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import {
   Button,
@@ -67,6 +69,13 @@ export function EventsDialog({
             const category = categories.filter(
               (category) => category.id === values.category
             )[0];
+            // Validierung vor Konvertierung
+            if (requriesMeasure(category?.type) && values.data) {
+              const result = validateMeasurement(values.data, category.config);
+              if (result !== true) {
+                return;
+              }
+            }
             if (category.type === "valueAccumulative") {
               values.data = convertMany(values.data.replace(",", "."))
                 .to(getDefaultUnit(category))
@@ -151,6 +160,18 @@ function ValueInput({ name }: { name: string }) {
     return <></>;
   }
 
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    formik.handleBlur(e);
+
+    if (requriesMeasure(category?.type) && formik.values[name]) {
+      const result = validateMeasurement(formik.values[name], category?.config);
+      if (result !== true) {
+        // setTimeout stellt sicher, dass setFieldError nach Formiks interner Validierung läuft
+        setTimeout(() => formik.setFieldError(name, result), 0);
+      }
+    }
+  };
+
   return (
     <TextField
       fullWidth
@@ -159,7 +180,7 @@ function ValueInput({ name }: { name: string }) {
       label="Wert"
       value={formik.values[name]}
       onChange={formik.handleChange}
-      onBlur={formik.handleBlur}
+      onBlur={handleBlur}
       error={formik.touched[name] && Boolean(formik.errors[name])}
       helperText={formik.touched[name] && formik.errors[name]}
     />

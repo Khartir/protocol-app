@@ -34,7 +34,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import * as Yup from "yup";
 import { AllCategorySelect } from "./category/CategorySelect";
-import { Form, Formik } from "formik";
+import { Form, Formik, useFormikContext } from "formik";
 
 import { useAtom, useAtomValue } from "jotai";
 import { addState } from "./app/Menu";
@@ -57,6 +57,7 @@ import { RxDocument } from "rxdb";
 import { useDeleteConfirm } from "./ConfirmDelete";
 import { DateSelect, selectedDate } from "./home/Home";
 import { getDefaultUnit } from "./MeasureSelect";
+import { durationSchema, validateMeasurement } from "./measurementValidation";
 import { PiecewiseColorConfig } from "../node_modules/@mui/x-charts/esm/models/colorMapping.js";
 
 // Helper to handle convert's different return types:
@@ -209,7 +210,37 @@ function AddLayer() {
 const validationSchema = Yup.object().shape({
   type: Yup.string().required("Pflichtfeld"),
   category: Yup.string().required("Pflichtfeld"),
+  range: durationSchema(),
 });
+
+function LimitInput({ name, label }: { name: string; label: string }) {
+  const formik = useFormikContext<{ [key: string]: string }>();
+  const category = useGetCategory(formik.values.category);
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    formik.handleBlur(e);
+
+    if (formik.values[name]) {
+      const result = validateMeasurement(formik.values[name], category?.config);
+      if (result !== true) {
+        setTimeout(() => formik.setFieldError(name, result), 0);
+      }
+    }
+  };
+
+  return (
+    <TextField
+      fullWidth
+      value={formik.values[name]}
+      onChange={formik.handleChange}
+      onBlur={handleBlur}
+      error={formik.touched[name] && Boolean(formik.errors[name])}
+      helperText={formik.touched[name] && formik.errors[name]}
+      label={label}
+      name={name}
+    />
+  );
+}
 
 function AnalyticsDialog({
   graph: { config, ...graph },
@@ -238,7 +269,11 @@ function AnalyticsDialog({
       <DialogContent>
         <Formik
           onSubmit={(values) => {
-            values.range = convertMany(values.range).to("seconds").toString();
+            if (values.range) {
+              values.range = convertMany(values.range.replace(",", "."))
+                .to("seconds")
+                .toString();
+            }
             const config = {
               upperLimit: values.upperLimit,
               lowerLimit: values.lowerLimit,
@@ -289,41 +324,13 @@ function AnalyticsDialog({
                   error={formik.touched.range && Boolean(formik.errors.range)}
                   helperText={formik.touched.range && formik.errors.range}
                   label="Standard-Dauer"
-                  placeholder="7d, 1w"
+                  placeholder="7d"
                   name="range"
                 />
                 {formik.values.type !== "table" && (
                   <>
-                    <TextField
-                      fullWidth
-                      value={formik.values.upperLimit}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      error={
-                        formik.touched.upperLimit &&
-                        Boolean(formik.errors.upperLimit)
-                      }
-                      helperText={
-                        formik.touched.upperLimit && formik.errors.upperLimit
-                      }
-                      label="Obergrenze"
-                      name="upperLimit"
-                    />
-                    <TextField
-                      fullWidth
-                      value={formik.values.lowerLimit}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      error={
-                        formik.touched.lowerLimit &&
-                        Boolean(formik.errors.lowerLimit)
-                      }
-                      helperText={
-                        formik.touched.lowerLimit && formik.errors.lowerLimit
-                      }
-                      label="Untergrenze"
-                      name="lowerLimit"
-                    />
+                    <LimitInput name="upperLimit" label="Obergrenze" />
+                    <LimitInput name="lowerLimit" label="Untergrenze" />
                   </>
                 )}
                 <Button variant="outlined" fullWidth onClick={handleClose}>
@@ -350,14 +357,20 @@ function SortableAccordionRow({ graph }: { graph: RxDocument<Graph> }) {
   const [open, setOpen] = useState(false);
   const { openDeleteConfirm, ConfirmDelete } = useDeleteConfirm(graph);
 
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: graph.id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: graph.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 1000 : "auto" as const,
+    zIndex: isDragging ? 1000 : ("auto" as const),
   };
 
   const handleClickOpen = () => {
