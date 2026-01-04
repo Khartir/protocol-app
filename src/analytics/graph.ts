@@ -11,7 +11,7 @@ export const graphTypes = {
 } as const;
 
 const graphSchema = {
-  version: 1,
+  version: 2,
   primaryKey: "id",
   type: "object",
   properties: {
@@ -35,8 +35,11 @@ const graphSchema = {
     config: {
       type: "object",
     },
+    order: {
+      type: "number",
+    },
   },
-  required: ["id", "name", "type", "category", "range", "config"],
+  required: ["id", "name", "type", "category", "range", "config", "order"],
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -50,11 +53,14 @@ export const graphCollection = {
   schema: graphSchema,
   migrationStrategies: {
     1: (oldDoc: Graph) => oldDoc,
+    2: (oldDoc: Graph) => ({ ...oldDoc, order: oldDoc.order ?? 0 }),
   },
 };
 
 export const useGetAllGraphs = () =>
-  useRxData<Graph>("graphs", (collection) => collection.find());
+  useRxData<Graph>("graphs", (collection) =>
+    collection.find().sort({ order: "asc" })
+  );
 
 export const useGetGraphsCollection = () => useRxCollection<Graph>("graphs");
 

@@ -1,19 +1,37 @@
 import { Heading } from "./styling/Heading";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
   Button,
   Dialog,
   DialogContent,
-  Stack,
-  TextField,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   FormControl,
   InputLabel,
-  Select,
   MenuItem,
+  Select,
+  Stack,
+  TextField,
 } from "@mui/material";
+import { DragIndicator, ExpandMore } from "@mui/icons-material";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import * as Yup from "yup";
 import { AllCategorySelect } from "./category/CategorySelect";
 import { Form, Formik } from "formik";
@@ -88,24 +106,73 @@ function aggregateEventsByDay(
     }));
 }
 
+function arrayMove<T>(array: T[], from: number, to: number): T[] {
+  const newArray = array.slice();
+  const [removed] = newArray.splice(from, 1);
+  newArray.splice(to, 0, removed);
+  return newArray;
+}
+
 export function Analytics() {
   const { result: graphs } = useGetAllGraphs();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = graphs.findIndex((g) => g.id === active.id);
+    const newIndex = graphs.findIndex((g) => g.id === over.id);
+
+    const reorderedGraphs = arrayMove(graphs, oldIndex, newIndex);
+
+    await Promise.all(
+      reorderedGraphs.map((graph, index) => graph.patch({ order: index }))
+    );
+  };
+
   return (
     <>
       <DateSelect />
       <Heading>Auswertung</Heading>
       <AddLayer />
-      <List>
-        {graphs.map((graph) => (
-          <Row graph={graph} key={graph.id} />
-        ))}
-      </List>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={graphs.map((g) => g.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {graphs.map((graph) => (
+            <SortableAccordionRow graph={graph} key={graph.id} />
+          ))}
+        </SortableContext>
+      </DndContext>
     </>
   );
 }
 
 function AddLayer() {
   const [open, setOpen] = useAtom(addState);
+  const { result: graphs } = useGetAllGraphs();
 
   const handleClose = () => {
     setOpen(false);
@@ -113,7 +180,11 @@ function AddLayer() {
 
   const collection = useGetGraphsCollection();
 
-  const persist = (data: Graph) => collection?.insert({ ...data, id: uuid() });
+  const persist = (data: Graph) => {
+    const maxOrder =
+      graphs.length > 0 ? Math.max(...graphs.map((g) => g.order ?? 0)) + 1 : 0;
+    collection?.insert({ ...data, id: uuid(), order: maxOrder });
+  };
 
   return (
     <>
@@ -125,6 +196,7 @@ function AddLayer() {
           name: "",
           config: "",
           range: "",
+          order: 0,
         }}
         handleClose={handleClose}
         persist={persist}
@@ -274,9 +346,19 @@ function AnalyticsDialog({
   );
 }
 
-function Row({ graph }: { graph: RxDocument<Graph> }) {
+function SortableAccordionRow({ graph }: { graph: RxDocument<Graph> }) {
   const [open, setOpen] = useState(false);
   const { openDeleteConfirm, ConfirmDelete } = useDeleteConfirm(graph);
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: graph.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : "auto" as const,
+  };
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -285,23 +367,74 @@ function Row({ graph }: { graph: RxDocument<Graph> }) {
   const handleClose = () => {
     setOpen(false);
   };
+
   return (
-    <>
-      <ListItem key={graph.id}>
-        <ListItemText>{graph.name}</ListItemText>
-        <ListItemIcon onClick={handleClickOpen}>
-          <Edit />
-        </ListItemIcon>
-        <ListItemIcon
-          onClick={(e) => {
-            e.stopPropagation();
-            openDeleteConfirm();
+    <div ref={setNodeRef} style={style}>
+      <Accordion defaultExpanded={false}>
+        <AccordionSummary
+          expandIcon={<ExpandMore />}
+          sx={{
+            "& .MuiAccordionSummary-content": {
+              alignItems: "center",
+            },
           }}
         >
-          <Delete />
-        </ListItemIcon>
-      </ListItem>
-      <Graphs graph={graph} />
+          <Box
+            component="span"
+            {...attributes}
+            {...listeners}
+            sx={{
+              cursor: "grab",
+              touchAction: "none",
+              mr: 1,
+              display: "flex",
+              alignItems: "center",
+              p: 0.5,
+              borderRadius: 1,
+              "&:hover": { bgcolor: "action.hover" },
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <DragIndicator fontSize="small" />
+          </Box>
+          <Box sx={{ flex: 1 }}>{graph.name}</Box>
+          <Box
+            component="span"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              p: 0.5,
+              borderRadius: 1,
+              "&:hover": { bgcolor: "action.hover" },
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClickOpen();
+            }}
+          >
+            <Edit fontSize="small" />
+          </Box>
+          <Box
+            component="span"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              p: 0.5,
+              borderRadius: 1,
+              "&:hover": { bgcolor: "action.hover" },
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              openDeleteConfirm();
+            }}
+          >
+            <Delete fontSize="small" />
+          </Box>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Graphs graph={graph} />
+        </AccordionDetails>
+      </Accordion>
       <AnalyticsDialog
         graph={graph.toMutableJSON()}
         handleClose={handleClose}
@@ -309,7 +442,7 @@ function Row({ graph }: { graph: RxDocument<Graph> }) {
         persist={(data) => graph.patch(data)}
       />
       <ConfirmDelete />
-    </>
+    </div>
   );
 }
 

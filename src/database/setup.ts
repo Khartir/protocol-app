@@ -8,6 +8,7 @@ import { eventSchema } from "../category/event";
 import { targetSchema } from "../category/target";
 import { RxDBJsonDumpPlugin } from "rxdb/plugins/json-dump";
 import { RxDBMigrationSchemaPlugin } from "rxdb/plugins/migration-schema";
+import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
 import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv";
 import { graphCollection } from "../analytics/graph";
 
@@ -17,6 +18,7 @@ if (import.meta.env.DEV) {
 
 addRxPlugin(RxDBJsonDumpPlugin);
 addRxPlugin(RxDBMigrationSchemaPlugin);
+addRxPlugin(RxDBQueryBuilderPlugin);
 
 const initialize = async () => {
   const storage = getStorage();
