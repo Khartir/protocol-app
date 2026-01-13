@@ -97,12 +97,22 @@ function aggregateEventsByDay(
 
   // Convert to array with unit conversion
   const defaultUnit = getDefaultUnit(category);
+
+  // If no target unit is set, determine it based on the maximum value
+  let effectiveTargetUnit = targetUnit;
+  if (!effectiveTargetUnit && defaultUnit) {
+    const maxValue = Math.max(...Array.from(dailyTotals.values()));
+    if (maxValue > 0) {
+      effectiveTargetUnit = convert(maxValue, defaultUnit).to("best").unit;
+    }
+  }
+
   return Array.from(dailyTotals.entries())
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([dateKey, value]) => ({
       x: dayjs(dateKey).toDate(),
       y: defaultUnit
-        ? toQuantity(convert(value, defaultUnit).to(targetUnit ?? "best"))
+        ? toQuantity(convert(value, defaultUnit).to(effectiveTargetUnit ?? "best"))
         : value,
     }));
 }
@@ -210,7 +220,7 @@ function AddLayer() {
 const validationSchema = Yup.object().shape({
   type: Yup.string().required("Pflichtfeld"),
   category: Yup.string().required("Pflichtfeld"),
-  range: durationSchema(),
+  range: durationSchema().required("Pflichtfeld"),
 });
 
 function LimitInput({ name, label }: { name: string; label: string }) {
@@ -500,23 +510,50 @@ function LineGraph({ graph }: { graph: Graph }) {
   }
 
   // Branch based on category type
-  const dataSet = isAccumulative
-    ? aggregateEventsByDay(data, fromDate, toDate, category, targetUnit)
-    : data.map((event) => {
-        try {
-          return {
-            x: dayjs(event.timestamp).toDate(),
-            y: toQuantity(
-              convertMany(event.data.replace(",", ".")).to(targetUnit ?? "best")
-            ),
-          };
-        } catch (e) {
-          return {
-            x: dayjs(event.timestamp).toDate(),
-            y: 0,
-          };
+  let dataSet: { x: Date; y: number }[];
+  if (isAccumulative) {
+    dataSet = aggregateEventsByDay(data, fromDate, toDate, category, targetUnit);
+  } else {
+    // For non-accumulative values: consistent unit based on maximum
+    let effectiveTargetUnit = targetUnit;
+    if (!effectiveTargetUnit && data.length > 0) {
+      try {
+        // Convert all values to base unit (e.g. seconds), find max, determine best unit
+        const defaultUnit = getDefaultUnit(category);
+        if (defaultUnit) {
+          const baseValues = data.map((e) => {
+            try {
+              return convertMany(e.data.replace(",", ".")).to(defaultUnit);
+            } catch {
+              return 0;
+            }
+          });
+          const maxBaseValue = Math.max(...baseValues);
+          if (maxBaseValue > 0) {
+            effectiveTargetUnit = convert(maxBaseValue, defaultUnit).to("best").unit;
+          }
         }
-      });
+      } catch {
+        // Fallback on parse errors
+      }
+    }
+
+    dataSet = data.map((event) => {
+      try {
+        return {
+          x: dayjs(event.timestamp).toDate(),
+          y: toQuantity(
+            convertMany(event.data.replace(",", ".")).to(effectiveTargetUnit ?? "best")
+          ),
+        };
+      } catch {
+        return {
+          x: dayjs(event.timestamp).toDate(),
+          y: 0,
+        };
+      }
+    });
+  }
 
   let colorMap: PiecewiseColorConfig | undefined = undefined;
 

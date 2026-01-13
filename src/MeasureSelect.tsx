@@ -78,7 +78,9 @@ export const toBest = (category: Category, value: string | Number): string => {
   const result = convert(intValue, unit).to("best");
 
   if ("s" !== unit) {
-    return result.toString();
+    // Round to avoid floating point errors, build string manually
+    const rounded = Math.round(result.quantity * 1000) / 1000;
+    return `${rounded} ${result.unit}`;
   }
 
   const whole = Math.floor(result.quantity);

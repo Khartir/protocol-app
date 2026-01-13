@@ -9,7 +9,8 @@ import {
   useGetCategories,
 } from "../category/category";
 import { useGetEventsForDateAndCategory } from "../category/event";
-import { toBest } from "../MeasureSelect";
+import { getDefaultUnit, toBest } from "../MeasureSelect";
+import { convertMany } from "convert";
 
 interface TableGraphProps {
   graph: Graph;
@@ -17,7 +18,7 @@ interface TableGraphProps {
 
 function formatValue(category: Category, value: number): string {
   if (value === 0) return "-";
-  if (category.type === "valueAccumulative") {
+  if (category.type === "valueAccumulative" || category.type === "value") {
     return toBest(category, value).replace(".", ",");
   }
   return String(value);
@@ -64,12 +65,33 @@ export function TableGraph({ graph }: TableGraphProps) {
     dailyData.set(day, new Map());
   }
 
+  const isProtocol = category.type === "protocol";
+  const isSimpleValue = category.type === "value";
+  const defaultUnit = getDefaultUnit(category);
+
   for (const event of events) {
     const dayKey = dayjs(event.timestamp).format("YYYY-MM-DD");
     const dayMap = dailyData.get(dayKey);
     if (dayMap) {
       const current = dayMap.get(event.category) ?? 0;
-      dayMap.set(event.category, current + Number(event.data || 0));
+      let increment: number;
+      if (isProtocol) {
+        // Protocol categories: count entries
+        increment = 1;
+      } else if (isSimpleValue && defaultUnit) {
+        // Simple measurements: stored with unit, convert to base unit
+        try {
+          increment = Math.round(
+            convertMany(event.data.replace(",", ".")).to(defaultUnit)
+          );
+        } catch {
+          increment = 0;
+        }
+      } else {
+        // Accumulated values: stored as raw number
+        increment = Number(event.data || 0);
+      }
+      dayMap.set(event.category, current + increment);
     }
   }
 
