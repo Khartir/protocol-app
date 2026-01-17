@@ -39,11 +39,19 @@ import { Form, Formik, useFormikContext } from "formik";
 import { useAtom, useAtomValue } from "jotai";
 import { addState } from "./app/Menu";
 import { v7 as uuid } from "uuid";
-import { Graph, graphTypes, useGetAllGraphs, useGetGraphsCollection } from "./analytics/graph";
+import {
+  Graph,
+  graphTypes,
+  aggregationModes,
+  useGetAllGraphs,
+  useGetGraphsCollection,
+} from "./analytics/graph";
 import { TableGraph } from "./analytics/TableGraph";
+import { aggregateEventsByPeriod, AggregationMode } from "./analytics/aggregation";
 import { useGetEventsForDateAndCategory } from "./category/event";
 import convert, { convertMany, Unit } from "convert";
 import dayjs from "dayjs";
+import weekOfYear from "dayjs/plugin/weekOfYear";
 import { Category, useGetCategory } from "./category/category";
 import { LineChart, LineSeries } from "@mui/x-charts/LineChart";
 import { Delete, Edit } from "@mui/icons-material";
@@ -54,6 +62,8 @@ import { DateSelect, selectedDate } from "./home/Home";
 import { getDefaultUnit } from "./MeasureSelect";
 import { durationSchema, validateMeasurement } from "./measurementValidation";
 import { PiecewiseColorConfig } from "../node_modules/@mui/x-charts/esm/models/colorMapping.js";
+
+dayjs.extend(weekOfYear);
 
 // Helper to handle convert's different return types:
 // .to("best") returns { quantity, unit }, .to(specificUnit) returns number
@@ -188,7 +198,7 @@ function AddLayer() {
           category: "",
           type: "line",
           name: "",
-          config: "",
+          config: { aggregationMode: "daily", weekStartDay: 1 },
           range: "",
           order: 0,
         }}
@@ -204,6 +214,14 @@ const validationSchema = Yup.object().shape({
   type: Yup.string().required("Pflichtfeld"),
   category: Yup.string().required("Pflichtfeld"),
   range: durationSchema().required("Pflichtfeld"),
+  aggregationMode: Yup.string().oneOf(["daily", "weekly", "monthly", "custom"]),
+  weekStartDay: Yup.number().oneOf([0, 1]),
+  aggregationDays: Yup.number()
+    .min(1, "Mindestens 1 Tag")
+    .when("aggregationMode", {
+      is: "custom",
+      then: (schema) => schema.required("Pflichtfeld"),
+    }),
 });
 
 function LimitInput({ name, label }: { name: string; label: string }) {
@@ -250,6 +268,9 @@ function AnalyticsDialog({
     ...graph,
     upperLimit: config?.upperLimit,
     lowerLimit: config?.lowerLimit,
+    aggregationMode: config?.aggregationMode ?? "daily",
+    weekStartDay: config?.weekStartDay ?? 1,
+    aggregationDays: config?.aggregationDays,
   };
   initialValues.range = initialValues.range
     ? convert(Number.parseInt(initialValues.range), "seconds").to("best").toString()
@@ -266,9 +287,15 @@ function AnalyticsDialog({
             const config = {
               upperLimit: values.upperLimit,
               lowerLimit: values.lowerLimit,
+              aggregationMode: values.aggregationMode,
+              weekStartDay: values.weekStartDay,
+              aggregationDays: values.aggregationDays,
             };
             delete values.upperLimit;
             delete values.lowerLimit;
+            delete values.aggregationMode;
+            delete values.weekStartDay;
+            delete values.aggregationDays;
             persist({ ...values, config });
             handleClose();
           }}
@@ -316,6 +343,53 @@ function AnalyticsDialog({
                   placeholder="7d"
                   name="range"
                 />
+                <FormControl fullWidth>
+                  <InputLabel id="aggregationMode-label">Aggregation</InputLabel>
+                  <Select
+                    labelId="aggregationMode-label"
+                    name="aggregationMode"
+                    label="Aggregation"
+                    value={formik.values.aggregationMode}
+                    onChange={formik.handleChange}
+                  >
+                    {Object.entries(aggregationModes).map(([value, label]) => (
+                      <MenuItem key={value} value={value}>
+                        {label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                {formik.values.aggregationMode === "weekly" && (
+                  <FormControl fullWidth>
+                    <InputLabel id="weekStartDay-label">Woche beginnt am</InputLabel>
+                    <Select
+                      labelId="weekStartDay-label"
+                      name="weekStartDay"
+                      value={formik.values.weekStartDay}
+                      label="Woche beginnt am"
+                      onChange={formik.handleChange}
+                    >
+                      <MenuItem value={1}>Montag</MenuItem>
+                      <MenuItem value={0}>Sonntag</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+                {formik.values.aggregationMode === "custom" && (
+                  <TextField
+                    fullWidth
+                    name="aggregationDays"
+                    label="Anzahl Tage"
+                    type="number"
+                    value={formik.values.aggregationDays ?? ""}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.aggregationDays && Boolean(formik.errors.aggregationDays)}
+                    helperText={formik.touched.aggregationDays && formik.errors.aggregationDays}
+                    slotProps={{
+                      htmlInput: { min: 1 },
+                    }}
+                  />
+                )}
                 {formik.values.type !== "table" && (
                   <>
                     <LimitInput name="upperLimit" label="Obergrenze" />
@@ -470,10 +544,29 @@ function LineGraph({ graph }: { graph: Graph }) {
     targetUnit = convertMany(graph.config.lowerLimit.replace(",", ".")).to("best").unit;
   }
 
-  // Branch based on category type
+  // Get aggregation mode from config (default to daily)
+  const aggregationMode = (graph.config?.aggregationMode ?? "daily") as AggregationMode;
+  const weekStartDay = graph.config?.weekStartDay ?? 1;
+  const aggregationDays = graph.config?.aggregationDays;
+
+  // Branch based on category type and aggregation mode
   let dataSet: { x: Date; y: number }[];
   if (isAccumulative) {
-    dataSet = aggregateEventsByDay(data, fromDate, toDate, category, targetUnit);
+    if (aggregationMode === "daily") {
+      dataSet = aggregateEventsByDay(data, fromDate, toDate, category, targetUnit);
+    } else {
+      dataSet = aggregateEventsByPeriod(
+        data,
+        aggregationMode,
+        weekStartDay,
+        aggregationDays,
+        fromDate,
+        toDate,
+        category,
+        undefined, // startDate - not needed for weekly/monthly
+        targetUnit
+      );
+    }
   } else {
     // For non-accumulative values: consistent unit based on maximum
     let effectiveTargetUnit = targetUnit;
@@ -553,6 +646,26 @@ function LineGraph({ graph }: { graph: Graph }) {
     }
   }
 
+  // Format X-axis labels based on aggregation mode
+  const formatXAxis = (date: Date) => {
+    if (!isAccumulative) {
+      return dayjs(date).format("HH:mm DD.MM.");
+    }
+
+    switch (aggregationMode) {
+      case "weekly":
+        return `KW ${dayjs(date).week()}`;
+      case "monthly":
+        return dayjs(date).format("MMM YY");
+      case "custom":
+        // Show period start date
+        return dayjs(date).format("DD.MM.");
+      case "daily":
+      default:
+        return dayjs(date).format("DD.MM.");
+    }
+  };
+
   return (
     <LineChart
       dataset={dataSet}
@@ -560,8 +673,7 @@ function LineGraph({ graph }: { graph: Graph }) {
         {
           dataKey: "x",
           scaleType: "time",
-          valueFormatter: (date) =>
-            isAccumulative ? dayjs(date).format("DD.MM.") : dayjs(date).format("HH:mm DD.MM."),
+          valueFormatter: formatXAxis,
         },
       ]}
       yAxis={[

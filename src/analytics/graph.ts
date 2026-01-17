@@ -13,8 +13,22 @@ export const graphTypes = {
   table: "Tabelle",
 } as const;
 
+/**
+ * Aggregation mode labels in German.
+ * - daily: Aggregate by day (default)
+ * - weekly: Aggregate by week
+ * - monthly: Aggregate by month
+ * - custom: Aggregate by custom number of days
+ */
+export const aggregationModes = {
+  daily: "Täglich",
+  weekly: "Wöchentlich",
+  monthly: "Monatlich",
+  custom: "Benutzerdefiniert",
+} as const;
+
 const graphSchema = {
-  version: 2,
+  version: 3,
   primaryKey: "id",
   type: "object",
   properties: {
@@ -37,6 +51,13 @@ const graphSchema = {
     },
     config: {
       type: "object",
+      properties: {
+        upperLimit: { type: "string" },
+        lowerLimit: { type: "string" },
+        aggregationMode: { type: "string" },
+        aggregationDays: { type: "number" },
+        weekStartDay: { type: "number" },
+      },
     },
     order: {
       type: "number",
@@ -59,6 +80,14 @@ export const graphCollection = {
   migrationStrategies: {
     1: (oldDoc: Graph) => oldDoc,
     2: (oldDoc: Graph) => ({ ...oldDoc, order: oldDoc.order ?? 0 }),
+    3: (oldDoc: Graph) => ({
+      ...oldDoc,
+      config: {
+        ...oldDoc.config,
+        aggregationMode: "daily",
+        weekStartDay: 1,
+      },
+    }),
   },
 };
 

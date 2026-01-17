@@ -11,7 +11,7 @@ The app uses four RxDB collections stored in IndexedDB:
 | `categories` | v2             | Category definitions (types, units, hierarchies) |
 | `events`     | v0             | Timestamped data entries                         |
 | `targets`    | v1             | Goals with recurring schedules and periods       |
-| `graphs`     | v2             | Analytics visualization configs                  |
+| `graphs`     | v3             | Analytics visualization configs                  |
 
 ---
 
@@ -208,7 +208,7 @@ Progress color uses CSS `color-mix()`:
 ## Graphs Collection
 
 **File:** `src/analytics/graph.ts`
-**Schema Version:** 2
+**Schema Version:** 3
 
 Graphs define analytics visualization configurations.
 
@@ -246,17 +246,23 @@ export const graphTypes = {
 
 ```typescript
 interface GraphConfig {
-  upperLimit?: number; // Upper threshold line (optional)
-  lowerLimit?: number; // Lower threshold line (optional)
+  upperLimit?: string;      // Upper threshold line (optional)
+  lowerLimit?: string;      // Lower threshold line (optional)
+  aggregationMode?: string; // "daily" | "weekly" | "monthly" | "custom"
+  aggregationDays?: number; // Only for "custom" mode
+  weekStartDay?: number;    // 0=Sunday, 1=Monday (for weekly aggregation)
 }
 ```
 
+See [ANALYTICS-AGGREGATION.md](./ANALYTICS-AGGREGATION.md) for detailed aggregation documentation.
+
 ### Migration History
 
-| From | To  | Changes                                  |
-| ---- | --- | ---------------------------------------- |
-| 0    | 1   | Identity migration                       |
-| 1    | 2   | Added `order` field with default value 0 |
+| From | To  | Changes                                                              |
+| ---- | --- | -------------------------------------------------------------------- |
+| 0    | 1   | Identity migration                                                   |
+| 1    | 2   | Added `order` field with default value 0                             |
+| 2    | 3   | Added `aggregationMode: "daily"` and `weekStartDay: 1` to config     |
 
 ---
 

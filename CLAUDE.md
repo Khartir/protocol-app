@@ -62,7 +62,7 @@ Primary device: Samsung Galaxy A10 (budget Android, small screen ~6.2", limited 
 
 **Targets** (`target.ts`) - Goals with RRule schedules, calculates completion status with color coding (red/yellow/green)
 
-**Graphs** (`graph.ts`) - Analytics configs with upper/lower limit thresholds
+**Graphs** (`graph.ts`) - Analytics configs with aggregation modes (daily/weekly/monthly/custom) and thresholds
 
 ### Key Patterns
 
@@ -100,6 +100,7 @@ Detailed documentation is available in the `docs/` directory:
 - [CI and Testing](docs/CI.md) - CI pipeline, Vitest testing, Prettier formatting, Dependabot
 - [Units and Conversion](docs/UNITS-AND-CONVERSION.md) - Unit conversion system (toBest, toDefault, validation)
 - [RRule and Schedules](docs/RRULE-AND-SCHEDULES.md) - Recurring schedule system for targets
+- [Analytics Aggregation](docs/ANALYTICS-AGGREGATION.md) - Graph aggregation modes (daily/weekly/monthly/custom)
 
 ## Git Worktrees
 
