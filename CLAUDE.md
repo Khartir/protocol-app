@@ -37,14 +37,15 @@ Primary device: Samsung Galaxy A10 (budget Android, small screen ~6.2", limited 
 
 ### Tech Stack
 
-- **Framework**: React 18 with Vite 5, SWC for Fast Refresh
+- **Framework**: React 19 with Vite 7, SWC for Fast Refresh
 - **Database**: RxDB with Dexie storage, rxdb-hooks for React integration
 - **State**: Jotai atoms in dedicated files (`src/app/atoms.ts`, `src/home/atoms.ts`)
-- **UI**: Material-UI v6, @mui/x-charts, @mui/x-date-pickers
+- **UI**: Material-UI v7, @mui/x-charts, @mui/x-date-pickers
 - **Forms**: Formik + Yup validation
 - **Dates**: dayjs with UTC/timezone plugins, RRule for recurrence schedules
+- **TypeScript**: 5.9
 
-### Routing (React Router v6)
+### Routing (React Router v7)
 
 - `/` - Home: date picker, targets for day, events list
 - `/target` - Targets/goals management with RRule schedules

@@ -7,7 +7,7 @@ import {
   useGetCategories,
 } from "../category/category";
 import { validateMeasurement } from "../measurementValidation";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import { Button, Dialog, DialogContent, Stack, Alert, TextField } from "@mui/material";
 import { Event } from "../category/event";
 import { Form, Formik, useFormikContext } from "formik";
@@ -84,8 +84,9 @@ export function EventsDialog({
               <Stack spacing={2}>
                 <AllCategorySelect />
                 <ChildCategorySelectWrapper />
-                <DateTimePicker
+                <MobileDateTimePicker
                   label="Zeitpunkt"
+                  openTo="hours"
                   value={dayjs(formik.values.timestamp)}
                   onChange={(value) => {
                     formik.setFieldValue("timestamp", value);
