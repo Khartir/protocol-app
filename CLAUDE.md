@@ -5,12 +5,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-bun install       # Install dependencies
-bun run dev       # Start Vite dev server
-bun run build     # Production build
-bun run lint      # Run ESLint
-bun run preview   # Preview production build
+bun install          # Install dependencies
+bun run dev          # Start Vite dev server
+bun run build        # Production build
+bun run lint         # Run ESLint
+bun run preview      # Preview production build
+bun run format       # Format code with Prettier
+bun run format:check # Check formatting
+bun run typecheck    # TypeScript type checking
+bun run test         # Run Vitest tests
+bun run test:watch   # Run tests in watch mode
 ```
+
+## Development Practices
+
+**Test-Driven Development (TDD):** Write tests before implementation for all new changes. Follow the red-green-refactor cycle:
+
+1. Write a failing test
+2. Write minimal code to pass
+3. Refactor while keeping tests green
+
+**Documentation:** Update relevant documentation (CLAUDE.md, README.md, or docs/) after implementing changes.
 
 ## Architecture Overview
 
@@ -82,6 +97,7 @@ Detailed documentation is available in the `docs/` directory:
 - [Architecture](docs/ARCHITECTURE.md) - System architecture, bootstrap flow, component hierarchy
 - [Data Schemas](docs/DATA-SCHEMAS.md) - Complete RxDB schema reference with field descriptions
 - [Development](docs/DEVELOPMENT.md) - Development workflows, debugging, adding features
+- [CI and Testing](docs/CI.md) - CI pipeline, Vitest testing, Prettier formatting, Dependabot
 - [Units and Conversion](docs/UNITS-AND-CONVERSION.md) - Unit conversion system (toBest, toDefault, validation)
 - [RRule and Schedules](docs/RRULE-AND-SCHEDULES.md) - Recurring schedule system for targets
 
