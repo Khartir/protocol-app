@@ -73,4 +73,68 @@ describe("graphCollection migration", () => {
       expect(migrated.order).toBe(3);
     });
   });
+
+  describe("v3 to v4 migration", () => {
+    it("adds xAxisScaleType: 'time' to existing graphs", () => {
+      const oldGraph = {
+        id: "test-id",
+        name: "Test Graph",
+        type: "line",
+        category: "cat-id",
+        range: "604800",
+        config: { aggregationMode: "daily", weekStartDay: 1 },
+        order: 0,
+      };
+
+      const migrated = graphCollection.migrationStrategies[4](oldGraph as Graph);
+
+      expect(migrated.config.xAxisScaleType).toBe("time");
+    });
+
+    it("preserves existing config properties including aggregation settings", () => {
+      const oldGraph = {
+        id: "test-id",
+        name: "Test Graph",
+        type: "line",
+        category: "cat-id",
+        range: "604800",
+        config: {
+          upperLimit: "100",
+          lowerLimit: "50",
+          aggregationMode: "weekly",
+          weekStartDay: 0,
+        },
+        order: 0,
+      };
+
+      const migrated = graphCollection.migrationStrategies[4](oldGraph as Graph);
+
+      expect(migrated.config.upperLimit).toBe("100");
+      expect(migrated.config.lowerLimit).toBe("50");
+      expect(migrated.config.aggregationMode).toBe("weekly");
+      expect(migrated.config.weekStartDay).toBe(0);
+      expect(migrated.config.xAxisScaleType).toBe("time");
+    });
+
+    it("preserves all non-config fields", () => {
+      const oldGraph = {
+        id: "graph-456",
+        name: "Exercise",
+        type: "table",
+        category: "exercise-cat",
+        range: "2592000",
+        config: { aggregationMode: "monthly", weekStartDay: 1 },
+        order: 5,
+      };
+
+      const migrated = graphCollection.migrationStrategies[4](oldGraph as Graph);
+
+      expect(migrated.id).toBe("graph-456");
+      expect(migrated.name).toBe("Exercise");
+      expect(migrated.type).toBe("table");
+      expect(migrated.category).toBe("exercise-cat");
+      expect(migrated.range).toBe("2592000");
+      expect(migrated.order).toBe(5);
+    });
+  });
 });

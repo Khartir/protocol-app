@@ -27,8 +27,18 @@ export const aggregationModes = {
   custom: "Benutzerdefiniert",
 } as const;
 
+/**
+ * X-axis scale type labels in German.
+ * - time: Automatic tick marks based on time range (default)
+ * - point: One tick mark per data point
+ */
+export const xAxisScaleTypes = {
+  time: "Zeitachse (automatisch)",
+  point: "Pro Datenpunkt",
+} as const;
+
 const graphSchema = {
-  version: 3,
+  version: 4,
   primaryKey: "id",
   type: "object",
   properties: {
@@ -57,6 +67,7 @@ const graphSchema = {
         aggregationMode: { type: "string" },
         aggregationDays: { type: "number" },
         weekStartDay: { type: "number" },
+        xAxisScaleType: { type: "string" },
       },
     },
     order: {
@@ -86,6 +97,13 @@ export const graphCollection = {
         ...oldDoc.config,
         aggregationMode: "daily",
         weekStartDay: 1,
+      },
+    }),
+    4: (oldDoc: Graph) => ({
+      ...oldDoc,
+      config: {
+        ...oldDoc.config,
+        xAxisScaleType: "time",
       },
     }),
   },

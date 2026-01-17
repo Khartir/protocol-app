@@ -43,6 +43,7 @@ import {
   Graph,
   graphTypes,
   aggregationModes,
+  xAxisScaleTypes,
   useGetAllGraphs,
   useGetGraphsCollection,
 } from "./analytics/graph";
@@ -198,7 +199,7 @@ function AddLayer() {
           category: "",
           type: "line",
           name: "",
-          config: { aggregationMode: "daily", weekStartDay: 1 },
+          config: { aggregationMode: "daily", weekStartDay: 1, xAxisScaleType: "time" },
           range: "",
           order: 0,
         }}
@@ -222,6 +223,7 @@ const validationSchema = Yup.object().shape({
       is: "custom",
       then: (schema) => schema.required("Pflichtfeld"),
     }),
+  xAxisScaleType: Yup.string().oneOf(["time", "point"]),
 });
 
 function LimitInput({ name, label }: { name: string; label: string }) {
@@ -271,6 +273,7 @@ function AnalyticsDialog({
     aggregationMode: config?.aggregationMode ?? "daily",
     weekStartDay: config?.weekStartDay ?? 1,
     aggregationDays: config?.aggregationDays,
+    xAxisScaleType: config?.xAxisScaleType ?? "time",
   };
   initialValues.range = initialValues.range
     ? convert(Number.parseInt(initialValues.range), "seconds").to("best").toString()
@@ -290,12 +293,14 @@ function AnalyticsDialog({
               aggregationMode: values.aggregationMode,
               weekStartDay: values.weekStartDay,
               aggregationDays: values.aggregationDays,
+              xAxisScaleType: values.xAxisScaleType,
             };
             delete values.upperLimit;
             delete values.lowerLimit;
             delete values.aggregationMode;
             delete values.weekStartDay;
             delete values.aggregationDays;
+            delete values.xAxisScaleType;
             persist({ ...values, config });
             handleClose();
           }}
@@ -389,6 +394,24 @@ function AnalyticsDialog({
                       htmlInput: { min: 1 },
                     }}
                   />
+                )}
+                {formik.values.type === "line" && (
+                  <FormControl fullWidth>
+                    <InputLabel id="xAxisScaleType-label">X-Achse</InputLabel>
+                    <Select
+                      labelId="xAxisScaleType-label"
+                      name="xAxisScaleType"
+                      label="X-Achse"
+                      value={formik.values.xAxisScaleType}
+                      onChange={formik.handleChange}
+                    >
+                      {Object.entries(xAxisScaleTypes).map(([value, label]) => (
+                        <MenuItem key={value} value={value}>
+                          {label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 )}
                 {formik.values.type !== "table" && (
                   <>
@@ -548,6 +571,7 @@ function LineGraph({ graph }: { graph: Graph }) {
   const aggregationMode = (graph.config?.aggregationMode ?? "daily") as AggregationMode;
   const weekStartDay = graph.config?.weekStartDay ?? 1;
   const aggregationDays = graph.config?.aggregationDays;
+  const xAxisScaleType = (graph.config?.xAxisScaleType ?? "time") as "time" | "point";
 
   // Branch based on category type and aggregation mode
   let dataSet: { x: Date; y: number }[];
@@ -672,7 +696,7 @@ function LineGraph({ graph }: { graph: Graph }) {
       xAxis={[
         {
           dataKey: "x",
-          scaleType: "time",
+          scaleType: xAxisScaleType,
           valueFormatter: formatXAxis,
         },
       ]}

@@ -81,13 +81,25 @@ Aggregation settings are stored in the graph's `config` object:
 
 ```typescript
 interface GraphConfig {
-  upperLimit?: string;      // Upper threshold line
-  lowerLimit?: string;      // Lower threshold line
-  aggregationMode?: string; // "daily" | "weekly" | "monthly" | "custom"
-  aggregationDays?: number; // Only for "custom" mode
-  weekStartDay?: number;    // 0=Sunday, 1=Monday (for weekly)
+  upperLimit?: string;       // Upper threshold line
+  lowerLimit?: string;       // Lower threshold line
+  aggregationMode?: string;  // "daily" | "weekly" | "monthly" | "custom"
+  aggregationDays?: number;  // Only for "custom" mode
+  weekStartDay?: number;     // 0=Sunday, 1=Monday (for weekly)
+  xAxisScaleType?: string;   // "time" | "point" (for line charts)
 }
 ```
+
+### X-Axis Scale Type
+
+Controls how x-axis labels are generated for line charts:
+
+| Type | German Label | Description |
+| ---- | ------------ | ----------- |
+| `time` | Zeitachse (automatisch) | Automatic tick marks based on time range (default) |
+| `point` | Pro Datenpunkt | Exactly one label per data point |
+
+Use `point` when you want one-to-one correspondence between data points and labels. This is especially useful for weekly/monthly aggregation where `time` scale may show intermediate dates.
 
 ### Schema Migration
 
