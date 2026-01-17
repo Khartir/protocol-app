@@ -4,6 +4,12 @@ import {
 } from "rxdb";
 import { useRxCollection, useRxData } from "rxdb-hooks";
 
+/**
+ * Graph type labels in German.
+ * - bar: Bar chart visualization (placeholder)
+ * - line: Line chart with time axis
+ * - table: Tabular data display
+ */
 export const graphTypes = {
   bar: "Balken-Diagramm",
   line: "Linien-Diagramm",
@@ -49,6 +55,10 @@ export type Graph = ExtractDocumentTypeFromTypedRxJsonSchema<
   typeof schemaTyped
 >;
 
+/**
+ * RxDB collection configuration for graphs.
+ * Includes schema and migration strategies for version upgrades.
+ */
 export const graphCollection = {
   schema: graphSchema,
   migrationStrategies: {
@@ -57,13 +67,26 @@ export const graphCollection = {
   },
 };
 
+/**
+ * Returns all graphs from the database, sorted by order field.
+ * @returns Reactive array of Graph documents
+ */
 export const useGetAllGraphs = () =>
   useRxData<Graph>("graphs", (collection) =>
     collection.find().sort({ order: "asc" })
   );
 
+/**
+ * Returns the graphs RxDB collection for direct mutations.
+ * @returns RxCollection for insert/patch/remove operations
+ */
 export const useGetGraphsCollection = () => useRxCollection<Graph>("graphs");
 
+/**
+ * Returns a single graph by ID.
+ * @param id - Graph UUID
+ * @returns Graph document or undefined
+ */
 export const useGetGraph = (id: string) => {
   const { result: categories } = useRxData<Graph>("graphs", (collection) =>
     collection.findOne({ selector: { id: { $eq: id } } })

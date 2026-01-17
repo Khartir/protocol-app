@@ -1,50 +1,62 @@
-# React + TypeScript + Vite
+# Protokol App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Eine Progressive Web App (PWA) zum Protokollieren und Tracken von Gesundheitsdaten und Gewohnheiten.
 
-Currently, two official plugins are available:
+## Funktionen
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Kategorien**: Verschiedene Tracking-Typen (Aufgaben, Messwerte, akkumulierte Werte, Protokolle)
+- **Ereignisse**: Zeitgestempelte Einträge mit optionalen Messwerten
+- **Ziele**: Wiederkehrende Ziele mit flexiblen Zeitplänen (täglich, wöchentlich, etc.)
+- **Auswertungen**: Linien-Diagramme und Tabellen zur Visualisierung
+- **Offline-First**: Alle Daten werden lokal gespeichert (IndexedDB)
+- **Backup/Restore**: Export und Import aller Daten als JSON
 
-## Expanding the ESLint configuration
+## Zielgerät
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Primär entwickelt für: **Samsung Galaxy A10** (Budget-Android, ~6,2" Display)
 
-- Configure the top-level `parserOptions` property like this:
+## Schnellstart
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+# Abhängigkeiten installieren
+bun install
+
+# Entwicklungsserver starten
+bun run dev
+
+# Produktions-Build erstellen
+bun run build
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Befehle
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+| Befehl | Beschreibung |
+|--------|--------------|
+| `bun install` | Abhängigkeiten installieren |
+| `bun run dev` | Entwicklungsserver mit HMR |
+| `bun run build` | Produktions-Build |
+| `bun run lint` | ESLint ausführen |
+| `bun run preview` | Produktions-Build testen |
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## Tech Stack
+
+- **Framework**: React 18 + TypeScript + Vite 5
+- **Datenbank**: RxDB mit IndexedDB (Dexie)
+- **State**: Jotai für globalen State
+- **UI**: Material-UI v6
+- **Formulare**: Formik + Yup
+- **Zeitpläne**: RRule für wiederkehrende Ziele
+
+## Dokumentation
+
+Detaillierte technische Dokumentation (Englisch):
+
+- [Architecture](docs/ARCHITECTURE.md) - Systemarchitektur und Aufbau
+- [Data Schemas](docs/DATA-SCHEMAS.md) - Datenbankschemas und Sammlungen
+- [Development](docs/DEVELOPMENT.md) - Entwicklungsanleitung
+- [Units and Conversion](docs/UNITS-AND-CONVERSION.md) - Einheitenkonvertierung
+- [RRule and Schedules](docs/RRULE-AND-SCHEDULES.md) - Zeitplan-System
+
+## Lizenz
+
+Privat

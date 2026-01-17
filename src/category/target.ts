@@ -11,6 +11,10 @@ import { selectedDate } from "../home/Home";
 import { Category, useGetCategory } from "./category";
 import { toBest } from "../MeasureSelect";
 
+/**
+ * RxDB schema for the targets collection.
+ * Targets define recurring goals with RRule schedules.
+ */
 export const targetSchema = {
   version: 0,
   primaryKey: "id",
@@ -43,12 +47,27 @@ export type Target = ExtractDocumentTypeFromTypedRxJsonSchema<
   typeof schemaTyped
 >;
 
+/**
+ * Returns all targets from the database.
+ * @returns Reactive array of Target documents
+ */
 export const useGetAllTargets = () => {
   return useRxData<Target>("targets", (collection) => collection.find());
 };
 
+/**
+ * Returns the targets RxDB collection for direct mutations.
+ * @returns RxCollection for insert/patch/remove operations
+ */
 export const useGetTargetsCollection = () => useRxCollection<Target>("targets");
 
+/**
+ * Returns targets that have at least one scheduled occurrence in the date range.
+ * Uses RRule evaluation to determine if a target applies to specific dates.
+ * @param from - Start timestamp (inclusive, local time milliseconds)
+ * @param to - End timestamp (exclusive, local time milliseconds)
+ * @returns Array of Target documents scheduled for the range
+ */
 export const useGetTargetsForDate = (from: number, to: number) => {
   const targets = useGetAllTargets();
 
@@ -57,6 +76,17 @@ export const useGetTargetsForDate = (from: number, to: number) => {
     .filter((target) => target !== null);
 };
 
+/**
+ * Calculates the completion status of a target for the selected date.
+ * Uses the global selectedDate atom and queries related events.
+ *
+ * @param target - Target to calculate status for
+ * @returns Status object with value, percentage, expected, and color
+ *
+ * @example
+ * const status = useGetTargetStatus(target);
+ * // status = { value: "500 ml", percentage: 50, expected: "1 l", color: "color-mix(...)" }
+ */
 export const useGetTargetStatus = (
   target: Target
 ): {

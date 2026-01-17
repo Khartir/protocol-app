@@ -5,6 +5,13 @@ import {
 } from "rxdb";
 import { useRxCollection, useRxData } from "rxdb-hooks";
 
+/**
+ * Category type labels in German.
+ * - todo: Simple task/checkbox tracking
+ * - value: Single measurement per entry
+ * - valueAccumulative: Values are summed (e.g., daily water intake)
+ * - protocol: Event logging, count-based
+ */
 export const categoryTypes = {
   // add count
   todo: "Aufgabe",
@@ -56,6 +63,10 @@ export type Category = ExtractDocumentTypeFromTypedRxJsonSchema<
   typeof schemaTyped
 >;
 
+/**
+ * RxDB collection configuration for categories.
+ * Includes schema and migration strategies for version upgrades.
+ */
 export const categoryCollection = {
   schema: categorySchema,
   migrationStrategies: {
@@ -64,12 +75,25 @@ export const categoryCollection = {
   },
 };
 
+/**
+ * Returns all categories from the database.
+ * @returns Reactive array of Category documents
+ */
 export const useGetAllCategories = () =>
   useRxData<Category>("categories", (collection) => collection.find());
 
+/**
+ * Returns the categories RxDB collection for direct mutations.
+ * @returns RxCollection for insert/patch/remove operations
+ */
 export const useGetCategoriesCollection = () =>
   useRxCollection<Category>("categories");
 
+/**
+ * Returns a single category by ID.
+ * @param id - Category UUID
+ * @returns Category document or undefined
+ */
 export const useGetCategory = (id: string) => {
   const { result: categories } = useRxData<Category>(
     "categories",
@@ -78,6 +102,11 @@ export const useGetCategory = (id: string) => {
   return categories[0];
 };
 
+/**
+ * Returns multiple categories by their IDs.
+ * @param ids - Array of category UUIDs
+ * @returns Array of Category documents
+ */
 export const useGetCategories = (ids: string[]) => {
   const { result: categories } = useRxData<Category>(
     "categories",
@@ -86,6 +115,14 @@ export const useGetCategories = (ids: string[]) => {
   return categories;
 };
 
+/**
+ * Returns categories that can be children of a composite category.
+ * Filters by same type and config, excluding the parent category itself.
+ * @param type - Category type (e.g., "valueAccumulative")
+ * @param config - Unit configuration (e.g., "volume")
+ * @param id - Parent category ID to exclude (or null)
+ * @returns Array of potential child categories
+ */
 export const useGetPossibleChildren = (
   type: string,
   config: string,
@@ -108,6 +145,19 @@ export const useGetPossibleChildren = (
   return categories;
 };
 
+/**
+ * Checks if a category type requires user input when creating events.
+ * Note: Function name has typo ("requries" instead of "requires").
+ * @param type - Category type string
+ * @returns true if input is required (all types except "todo")
+ */
 export const requriesInput = (type: string) => !["todo"].includes(type);
+
+/**
+ * Checks if a category type requires unit/measurement configuration.
+ * Note: Function name has typo ("requries" instead of "requires").
+ * @param type - Category type string
+ * @returns true if measurement is required ("value" and "valueAccumulative")
+ */
 export const requriesMeasure = (type: string) =>
   !["todo", "protocol"].includes(type);
