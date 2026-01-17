@@ -29,6 +29,7 @@ This applies to both line charts and table graphs.
 ```
 
 Day.js plugins required:
+
 - `weekOfYear` - For week number formatting (KW X)
 
 ---
@@ -39,39 +40,39 @@ Day.js plugins required:
 
 Aggregates events by calendar day.
 
-| Setting | Value |
-| ------- | ----- |
+| Setting           | Value     |
+| ----------------- | --------- |
 | `aggregationMode` | `"daily"` |
-| Label format | `"15.01"` |
+| Label format      | `"15.01"` |
 
 ### Weekly
 
 Aggregates events by week, respecting the configured week start day.
 
-| Setting | Value |
-| ------- | ----- |
-| `aggregationMode` | `"weekly"` |
-| `weekStartDay` | `0` (Sunday) or `1` (Monday) |
-| Label format | `"KW 3"` (week number) |
+| Setting           | Value                        |
+| ----------------- | ---------------------------- |
+| `aggregationMode` | `"weekly"`                   |
+| `weekStartDay`    | `0` (Sunday) or `1` (Monday) |
+| Label format      | `"KW 3"` (week number)       |
 
 ### Monthly
 
 Aggregates events by calendar month.
 
-| Setting | Value |
-| ------- | ----- |
+| Setting           | Value       |
+| ----------------- | ----------- |
 | `aggregationMode` | `"monthly"` |
-| Label format | `"Jan 24"` |
+| Label format      | `"Jan 24"`  |
 
 ### Custom
 
 Aggregates events by a custom number of days.
 
-| Setting | Value |
-| ------- | ----- |
-| `aggregationMode` | `"custom"` |
+| Setting           | Value                     |
+| ----------------- | ------------------------- |
+| `aggregationMode` | `"custom"`                |
 | `aggregationDays` | Number of days per period |
-| Label format | `"01.01 - 14.01"` |
+| Label format      | `"01.01 - 14.01"`         |
 
 ---
 
@@ -81,12 +82,12 @@ Aggregation settings are stored in the graph's `config` object:
 
 ```typescript
 interface GraphConfig {
-  upperLimit?: string;       // Upper threshold line
-  lowerLimit?: string;       // Lower threshold line
-  aggregationMode?: string;  // "daily" | "weekly" | "monthly" | "custom"
-  aggregationDays?: number;  // Only for "custom" mode
-  weekStartDay?: number;     // 0=Sunday, 1=Monday (for weekly)
-  xAxisScaleType?: string;   // "time" | "point" (for line charts)
+  upperLimit?: string; // Upper threshold line
+  lowerLimit?: string; // Lower threshold line
+  aggregationMode?: string; // "daily" | "weekly" | "monthly" | "custom"
+  aggregationDays?: number; // Only for "custom" mode
+  weekStartDay?: number; // 0=Sunday, 1=Monday (for weekly)
+  xAxisScaleType?: string; // "time" | "point" (for line charts)
 }
 ```
 
@@ -94,10 +95,10 @@ interface GraphConfig {
 
 Controls how x-axis labels are generated for line charts:
 
-| Type | German Label | Description |
-| ---- | ------------ | ----------- |
-| `time` | Zeitachse (automatisch) | Automatic tick marks based on time range (default) |
-| `point` | Pro Datenpunkt | Exactly one label per data point |
+| Type    | German Label            | Description                                        |
+| ------- | ----------------------- | -------------------------------------------------- |
+| `time`  | Zeitachse (automatisch) | Automatic tick marks based on time range (default) |
+| `point` | Pro Datenpunkt          | Exactly one label per data point                   |
 
 Use `point` when you want one-to-one correspondence between data points and labels. This is especially useful for weekly/monthly aggregation where `time` scale may show intermediate dates.
 
@@ -131,7 +132,7 @@ function getAggregationBoundaries(
   aggregationDays: number | undefined,
   date: number,
   startDate?: number
-): { from: number; to: number }
+): { from: number; to: number };
 ```
 
 **Parameters:**
@@ -174,7 +175,7 @@ function aggregateEventsByPeriod(
   category: Category,
   startDate?: number,
   targetUnit?: Unit
-): { x: Date; y: number }[]
+): { x: Date; y: number }[];
 ```
 
 **Parameters:**
@@ -425,10 +426,10 @@ For custom aggregation, the `startDate` parameter is used to calculate period bo
 
 Analytics aggregation is independent of target periods:
 
-| Feature | Target `periodType` | Graph `aggregationMode` |
-| ------- | ------------------- | ----------------------- |
-| Purpose | Event accumulation for goal progress | Data visualization grouping |
-| Scope | Single target | Single graph |
-| Affects | TargetList status display | LineGraph/TableGraph display |
+| Feature | Target `periodType`                  | Graph `aggregationMode`      |
+| ------- | ------------------------------------ | ---------------------------- |
+| Purpose | Event accumulation for goal progress | Data visualization grouping  |
+| Scope   | Single target                        | Single graph                 |
+| Affects | TargetList status display            | LineGraph/TableGraph display |
 
 A daily target can be visualized with weekly aggregation, and vice versa.

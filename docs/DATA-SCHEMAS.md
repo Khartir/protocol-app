@@ -246,12 +246,12 @@ export const graphTypes = {
 
 ```typescript
 interface GraphConfig {
-  upperLimit?: string;       // Upper threshold line (optional)
-  lowerLimit?: string;       // Lower threshold line (optional)
-  aggregationMode?: string;  // "daily" | "weekly" | "monthly" | "custom"
-  aggregationDays?: number;  // Only for "custom" mode
-  weekStartDay?: number;     // 0=Sunday, 1=Monday (for weekly aggregation)
-  xAxisScaleType?: string;   // "time" | "point" (for line charts)
+  upperLimit?: string; // Upper threshold line (optional)
+  lowerLimit?: string; // Lower threshold line (optional)
+  aggregationMode?: string; // "daily" | "weekly" | "monthly" | "custom"
+  aggregationDays?: number; // Only for "custom" mode
+  weekStartDay?: number; // 0=Sunday, 1=Monday (for weekly aggregation)
+  xAxisScaleType?: string; // "time" | "point" (for line charts)
 }
 ```
 
@@ -259,12 +259,12 @@ See [ANALYTICS-AGGREGATION.md](./ANALYTICS-AGGREGATION.md) for detailed aggregat
 
 ### Migration History
 
-| From | To  | Changes                                                              |
-| ---- | --- | -------------------------------------------------------------------- |
-| 0    | 1   | Identity migration                                                   |
-| 1    | 2   | Added `order` field with default value 0                             |
-| 2    | 3   | Added `aggregationMode: "daily"` and `weekStartDay: 1` to config     |
-| 3    | 4   | Added `xAxisScaleType: "time"` to config                             |
+| From | To  | Changes                                                          |
+| ---- | --- | ---------------------------------------------------------------- |
+| 0    | 1   | Identity migration                                               |
+| 1    | 2   | Added `order` field with default value 0                         |
+| 2    | 3   | Added `aggregationMode: "daily"` and `weekStartDay: 1` to config |
+| 3    | 4   | Added `xAxisScaleType: "time"` to config                         |
 
 ---
 
