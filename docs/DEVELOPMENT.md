@@ -122,7 +122,7 @@ bun run dev
 
 4. Update helper functions if needed:
    ```typescript
-   export const requriesInput = (type: string) => !["todo", "newType"].includes(type);
+   export const requiresInput = (type: string) => !["todo", "newType"].includes(type);
    ```
 
 5. Handle new type in `useGetTargetStatus()` in `src/category/target.ts`

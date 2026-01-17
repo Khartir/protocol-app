@@ -238,7 +238,7 @@ React component for selecting measure type in category forms.
 ```typescript
 export const MeasureSelect = () => {
   const formik = useFormikContext<Category>();
-  if (!requriesMeasure(formik.values.type)) {
+  if (!requiresMeasure(formik.values.type)) {
     return <></>;
   }
   // Renders select dropdown
@@ -305,7 +305,7 @@ Categories store their measure type in the `config` field:
 
 Check with:
 ```typescript
-requriesMeasure(category.type)  // true/false
+requiresMeasure(category.type)  // true/false
 ```
 
 ---

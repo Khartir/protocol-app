@@ -6,7 +6,7 @@ import {
   FormHelperText,
 } from "@mui/material";
 import { useFormikContext } from "formik";
-import { Category, requriesMeasure } from "./category/category";
+import { Category, requiresMeasure } from "./category/category";
 
 import convert, { Unit } from "convert";
 
@@ -24,7 +24,7 @@ const defaults = {
 
 export const MeasureSelect = () => {
   const formik = useFormikContext<Category>();
-  if (!requriesMeasure(formik.values.type)) {
+  if (!requiresMeasure(formik.values.type)) {
     return <></>;
   }
 

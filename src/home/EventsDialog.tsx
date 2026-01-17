@@ -1,8 +1,8 @@
 import {
   useGetCategory,
   useGetAllCategories,
-  requriesInput,
-  requriesMeasure,
+  requiresInput,
+  requiresMeasure,
   Category,
   useGetCategories,
 } from "../category/category";
@@ -70,7 +70,7 @@ export function EventsDialog({
               (category) => category.id === values.category
             )[0];
             // Validierung vor Konvertierung
-            if (requriesMeasure(category?.type) && values.data) {
+            if (requiresMeasure(category?.type) && values.data) {
               const result = validateMeasurement(values.data, category.config);
               if (result !== true) {
                 return;
@@ -156,14 +156,14 @@ function AlertDialog({
 function ValueInput({ name }: { name: string }) {
   const formik = useFormikContext<{ [name: string]: string }>();
   const category = useGetCategory(formik.values.category);
-  if (!requriesInput(category?.type)) {
+  if (!requiresInput(category?.type)) {
     return <></>;
   }
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     formik.handleBlur(e);
 
-    if (requriesMeasure(category?.type) && formik.values[name]) {
+    if (requiresMeasure(category?.type) && formik.values[name]) {
       const result = validateMeasurement(formik.values[name], category?.config);
       if (result !== true) {
         // setTimeout stellt sicher, dass setFieldError nach Formiks interner Validierung läuft

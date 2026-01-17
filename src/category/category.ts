@@ -147,17 +147,15 @@ export const useGetPossibleChildren = (
 
 /**
  * Checks if a category type requires user input when creating events.
- * Note: Function name has typo ("requries" instead of "requires").
  * @param type - Category type string
  * @returns true if input is required (all types except "todo")
  */
-export const requriesInput = (type: string) => !["todo"].includes(type);
+export const requiresInput = (type: string) => !["todo"].includes(type);
 
 /**
  * Checks if a category type requires unit/measurement configuration.
- * Note: Function name has typo ("requries" instead of "requires").
  * @param type - Category type string
  * @returns true if measurement is required ("value" and "valueAccumulative")
  */
-export const requriesMeasure = (type: string) =>
+export const requiresMeasure = (type: string) =>
   !["todo", "protocol"].includes(type);

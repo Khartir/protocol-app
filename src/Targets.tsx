@@ -28,7 +28,7 @@ import dayjs from "dayjs";
 
 import utc from "dayjs/plugin/utc";
 import { Delete } from "@mui/icons-material";
-import { useGetCategory, useGetAllCategories, requriesMeasure } from "./category/category";
+import { useGetCategory, useGetAllCategories, requiresMeasure } from "./category/category";
 import { getDefaultUnit, toBest } from "./MeasureSelect";
 import { validateMeasurement } from "./measurementValidation";
 import { convertMany } from "convert";
@@ -134,7 +134,7 @@ function TargetsDialog({
               (category) => category.id === values.category
             )[0];
             // Validierung vor Konvertierung
-            if (requriesMeasure(category?.type) && values.config) {
+            if (requiresMeasure(category?.type) && values.config) {
               const result = validateMeasurement(values.config, category.config);
               if (result !== true) {
                 return;
@@ -223,7 +223,7 @@ function AddLayer() {
 function ValueInput({ name }: { name: string }) {
   const formik = useFormikContext<{ [name: string]: string }>();
   const category = useGetCategory(formik.values.category);
-  if (!category || !requriesMeasure(category.type)) {
+  if (!category || !requiresMeasure(category.type)) {
     return <></>;
   }
 

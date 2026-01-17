@@ -58,11 +58,10 @@ export const categoryTypes = {
 
 ```typescript
 // Returns true if category type requires user input
-requriesInput(type: string): boolean
-// Note: typo in original code ("requries" instead of "requires")
+requiresInput(type: string): boolean
 
 // Returns true if category type requires unit configuration
-requriesMeasure(type: string): boolean
+requiresMeasure(type: string): boolean
 ```
 
 ### Migration History

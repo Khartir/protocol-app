@@ -17,7 +17,7 @@ import {
   useGetTargetStatus,
 } from "../category/target";
 import { selectedDate } from "./Home";
-import { requriesInput, useGetCategory } from "../category/category";
+import { requiresInput, useGetCategory } from "../category/category";
 import { Event, useGetEventsCollection } from "../category/event";
 import { useState } from "react";
 import { RxDocument } from "rxdb";
@@ -61,7 +61,7 @@ function Row({ target }: { target: RxDocument<Target> }) {
 
   const showDialog =
     dayjs().hour(0).minute(0).second(0).millisecond(0).isBefore(dayjs(date)) ||
-    requriesInput(category?.type);
+    requiresInput(category?.type);
 
   const handleClick = () => {
     if (showDialog) {
