@@ -63,9 +63,15 @@ import { DateSelect } from "./home/Home";
 import { selectedDate } from "./home/atoms";
 import { getDefaultUnit } from "./measure-utils";
 import { durationSchema, validateMeasurement } from "./measurementValidation";
-import { PiecewiseColorConfig } from "../node_modules/@mui/x-charts/esm/models/colorMapping.js";
 
 dayjs.extend(weekOfYear);
+
+// Inline type definition to avoid importing from internal MUI paths
+interface PiecewiseColorConfig {
+  type: "piecewise";
+  thresholds: (number | Date)[];
+  colors: string[];
+}
 
 // Helper to handle convert's different return types:
 // .to("best") returns { quantity, unit }, .to(specificUnit) returns number

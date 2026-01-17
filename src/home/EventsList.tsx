@@ -92,10 +92,18 @@ function AddLayer() {
       id: uuid(),
     });
 
+  // Use lazy state initializer to capture timestamp once on mount
+  const [initialEvent] = useState(() => ({
+    category: "",
+    id: "",
+    timestamp: Date.now(),
+    data: "",
+  }));
+
   return (
     <>
       <EventsDialog
-        event={{ category: "", id: "", timestamp: Date.now(), data: "" }}
+        event={initialEvent}
         handleClose={handleClose}
         persist={persist}
         open={open}
