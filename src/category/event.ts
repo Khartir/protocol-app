@@ -35,9 +35,7 @@ export const eventSchema = {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const schemaTyped = toTypedRxJsonSchema(eventSchema);
 
-export type Event = ExtractDocumentTypeFromTypedRxJsonSchema<
-  typeof schemaTyped
->;
+export type Event = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
 
 /**
  * Returns all events from the database.

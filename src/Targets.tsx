@@ -16,11 +16,7 @@ import { useState } from "react";
 import { RxDocument } from "rxdb";
 import { useAtom } from "jotai";
 import * as Yup from "yup";
-import {
-  Target,
-  useGetAllTargets,
-  useGetTargetsCollection,
-} from "./category/target";
+import { Target, useGetAllTargets, useGetTargetsCollection } from "./category/target";
 import { AllCategorySelect } from "./category/CategorySelect";
 import { RRuleBuilder } from "react-rrule-builder-ts";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -130,9 +126,7 @@ function TargetsDialog({
       <DialogContent>
         <Formik
           onSubmit={(values) => {
-            const category = categories.filter(
-              (category) => category.id === values.category
-            )[0];
+            const category = categories.filter((category) => category.id === values.category)[0];
             // Validierung vor Konvertierung
             if (requiresMeasure(category?.type) && values.config) {
               const result = validateMeasurement(values.config, category.config);
@@ -167,12 +161,7 @@ function TargetsDialog({
                 <AllCategorySelect />
                 <RRuleBuilder
                   dateAdapter={AdapterDayjs}
-                  datePickerInitialDate={dayjs()
-                    .utc()
-                    .hour(0)
-                    .minute(0)
-                    .second(0)
-                    .millisecond(0)}
+                  datePickerInitialDate={dayjs().utc().hour(0).minute(0).second(0).millisecond(0)}
                   rruleString={formik.values.schedule}
                   onChange={(value) => formik.setFieldValue("schedule", value)}
                 />
@@ -180,12 +169,7 @@ function TargetsDialog({
                 <Button variant="outlined" fullWidth onClick={handleClose}>
                   Abbrechen
                 </Button>
-                <Button
-                  color="primary"
-                  variant="contained"
-                  fullWidth
-                  type="submit"
-                >
+                <Button color="primary" variant="contained" fullWidth type="submit">
                   Speichern
                 </Button>
               </Stack>

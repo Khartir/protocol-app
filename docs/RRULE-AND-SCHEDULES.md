@@ -33,37 +33,41 @@ RRULE:FREQ=DAILY;INTERVAL=1
 
 ### Components
 
-| Part | Description |
-|------|-------------|
-| `DTSTART` | Start date in UTC (required) |
-| `RRULE` | Recurrence rule |
-| `FREQ` | Frequency: DAILY, WEEKLY, MONTHLY, YEARLY |
-| `INTERVAL` | Every N periods (default: 1) |
-| `BYDAY` | Specific days (e.g., MO,WE,FR) |
-| `COUNT` | Total occurrences limit |
-| `UNTIL` | End date |
+| Part       | Description                               |
+| ---------- | ----------------------------------------- |
+| `DTSTART`  | Start date in UTC (required)              |
+| `RRULE`    | Recurrence rule                           |
+| `FREQ`     | Frequency: DAILY, WEEKLY, MONTHLY, YEARLY |
+| `INTERVAL` | Every N periods (default: 1)              |
+| `BYDAY`    | Specific days (e.g., MO,WE,FR)            |
+| `COUNT`    | Total occurrences limit                   |
+| `UNTIL`    | End date                                  |
 
 ### Examples
 
 **Daily:**
+
 ```
 DTSTART:20240101T000000Z
 RRULE:FREQ=DAILY;INTERVAL=1
 ```
 
 **Every other day:**
+
 ```
 DTSTART:20240101T000000Z
 RRULE:FREQ=DAILY;INTERVAL=2
 ```
 
 **Weekly on Monday, Wednesday, Friday:**
+
 ```
 DTSTART:20240101T000000Z
 RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR
 ```
 
 **Monthly on the 1st:**
+
 ```
 DTSTART:20240101T000000Z
 RRULE:FREQ=MONTHLY;BYMONTHDAY=1
@@ -120,6 +124,7 @@ const getCount = (target: Target, from: number, to: number) => {
 ```
 
 **Parameters:**
+
 - `target` - Target with schedule string
 - `from` - Start timestamp (local time, milliseconds)
 - `to` - End timestamp (local time, milliseconds)
@@ -145,11 +150,13 @@ export const useGetTargetsForDate = (from: number, to: number) => {
 ```
 
 **Logic:**
+
 1. Fetch all targets
 2. For each target, check if `getCount() >= 1`
 3. Return only targets with at least one occurrence
 
 **Usage:**
+
 ```typescript
 // Get targets for today
 const from = dayjs().startOf("day").valueOf();
@@ -199,7 +206,7 @@ Custom adapter ensures UTC handling:
 ```typescript
 const DayjsUtcDateAdapter: DateAdapter = {
   // ... adapter implementation
-}
+};
 ```
 
 ---
@@ -207,39 +214,49 @@ const DayjsUtcDateAdapter: DateAdapter = {
 ## Common Patterns
 
 ### Daily Target
+
 User wants to drink water every day:
 
 ```
 RRULE:FREQ=DAILY
 ```
+
 - `getCount()` returns 1 for any single day
 
 ### Multiple Times Daily
+
 User wants to exercise 3 times per day:
 
 Store `config: "3"` and use:
+
 ```
 RRULE:FREQ=DAILY
 ```
+
 - For `todo`/`value` types, expected = `getCount() * config`
 
 ### Weekday Only
+
 User wants to take medication on weekdays:
 
 ```
 RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR
 ```
+
 - `getCount()` returns 1 for weekdays, 0 for weekends
 
 ### Every Other Day
+
 User wants to run every 2 days:
 
 ```
 RRULE:FREQ=DAILY;INTERVAL=2
 ```
+
 - `getCount()` returns 1 on scheduled days, 0 otherwise
 
 ### Specific Day of Month
+
 User wants to pay rent on the 1st:
 
 ```
@@ -264,7 +281,7 @@ console.log(`Scheduled ${count} times on Jan 15`);
 
 ```typescript
 const rule = RRule.fromString(target.schedule);
-const dates = rule.all((_, i) => i < 10);  // First 10
+const dates = rule.all((_, i) => i < 10); // First 10
 console.log(dates);
 ```
 
@@ -272,7 +289,7 @@ console.log(dates);
 
 ```typescript
 const rule = RRule.fromString(target.schedule);
-console.log(rule.toText());  // "every day"
+console.log(rule.toText()); // "every day"
 ```
 
 ---
@@ -282,12 +299,14 @@ console.log(rule.toText());  // "every day"
 ### DST (Daylight Saving Time)
 
 Using `.tz("utc", true)` avoids most DST issues by treating local dates as UTC dates. However, be aware:
+
 - A daily target at midnight local time should fire once per day
 - During DST transitions, the actual wall clock time shifts
 
 ### Timezone Mismatch
 
 If the user travels to a different timezone:
+
 - Events are stored in local time
 - Targets evaluate against the device's current timezone
 - This may cause unexpected behavior
@@ -311,7 +330,7 @@ const to = dayjs(from).add(1, "day").valueOf();
 const targets = useGetTargetsForDate(from, to);
 
 // 3. For each target, get status
-targets.map(target => {
+targets.map((target) => {
   const status = useGetTargetStatus(target);
   // status = { value, percentage, expected, color }
 });

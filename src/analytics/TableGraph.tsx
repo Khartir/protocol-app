@@ -3,11 +3,7 @@ import { useAtomValue } from "jotai";
 import dayjs from "dayjs";
 import { Graph } from "./graph";
 import { selectedDate } from "../home/Home";
-import {
-  Category,
-  useGetCategory,
-  useGetCategories,
-} from "../category/category";
+import { Category, useGetCategory, useGetCategories } from "../category/category";
 import { useGetEventsForDateAndCategory } from "../category/event";
 import { getDefaultUnit, toBest } from "../MeasureSelect";
 import { convertMany } from "convert";
@@ -28,19 +24,12 @@ const valueStyle = { minWidth: 80, textAlign: "right" as const };
 
 export function TableGraph({ graph }: TableGraphProps) {
   const date = useAtomValue(selectedDate);
-  const fromDate = dayjs(date).subtract(
-    Number.parseInt(graph.range),
-    "seconds"
-  );
+  const fromDate = dayjs(date).subtract(Number.parseInt(graph.range), "seconds");
   const toDate = dayjs(date).endOf("day");
 
   const category = useGetCategory(graph.category);
   const childCategories = useGetCategories(category?.children ?? []);
-  const events = useGetEventsForDateAndCategory(
-    fromDate.valueOf(),
-    toDate.valueOf(),
-    category
-  );
+  const events = useGetEventsForDateAndCategory(fromDate.valueOf(), toDate.valueOf(), category);
 
   if (!category) {
     return <Typography color="error">Kategorie nicht gefunden</Typography>;
@@ -81,9 +70,7 @@ export function TableGraph({ graph }: TableGraphProps) {
       } else if (isSimpleValue && defaultUnit) {
         // Simple measurements: stored with unit, convert to base unit
         try {
-          increment = Math.round(
-            convertMany(event.data.replace(",", ".")).to(defaultUnit)
-          );
+          increment = Math.round(convertMany(event.data.replace(",", ".")).to(defaultUnit));
         } catch {
           increment = 0;
         }
@@ -137,10 +124,7 @@ export function TableGraph({ graph }: TableGraphProps) {
               {childValues.length > 0 ? (
                 <Box sx={{ pl: 1, width: "100%" }}>
                   {childValues.map((cv, idx) => (
-                    <Box
-                      key={idx}
-                      sx={{ display: "flex", justifyContent: "space-between" }}
-                    >
+                    <Box key={idx} sx={{ display: "flex", justifyContent: "space-between" }}>
                       <Typography variant="body2" sx={{ flex: 1 }}>
                         {cv.name}
                       </Typography>
@@ -195,10 +179,7 @@ export function TableGraph({ graph }: TableGraphProps) {
         const value = dayMap.get(category.id) ?? 0;
 
         return (
-          <ListItem
-            key={dayKey}
-            sx={{ display: "flex", justifyContent: "space-between", py: 0.5 }}
-          >
+          <ListItem key={dayKey} sx={{ display: "flex", justifyContent: "space-between", py: 0.5 }}>
             <Typography variant="body2" fontWeight="bold" sx={{ flex: 1 }}>
               {dayjs(dayKey).format("DD.MM.")}
             </Typography>

@@ -11,11 +11,7 @@ import {
 } from "@mui/material";
 import { useAtomValue } from "jotai";
 import dayjs from "dayjs";
-import {
-  useGetTargetsForDate,
-  Target,
-  useGetTargetStatus,
-} from "../category/target";
+import { useGetTargetsForDate, Target, useGetTargetStatus } from "../category/target";
 import { selectedDate } from "./Home";
 import { requiresInput, useGetCategory } from "../category/category";
 import { Event, useGetEventsCollection } from "../category/event";
@@ -25,10 +21,7 @@ import { v7 as uuid } from "uuid";
 import { EventsDialog } from "./EventsDialog";
 export function TargetList() {
   const date = useAtomValue(selectedDate);
-  const targets = useGetTargetsForDate(
-    date,
-    dayjs(date).add(1, "day").valueOf()
-  );
+  const targets = useGetTargetsForDate(date, dayjs(date).add(1, "day").valueOf());
   return (
     <>
       <Heading>Ziele</Heading>
@@ -50,11 +43,7 @@ function Row({ target }: { target: RxDocument<Target> }) {
 
   const event = {
     category: target.category,
-    timestamp: dayjs(date)
-      .hour(now.hour())
-      .minute(now.minute())
-      .second(now.second())
-      .valueOf(),
+    timestamp: dayjs(date).hour(now.hour()).minute(now.minute()).second(now.second()).valueOf(),
     id: uuid(),
     data: "",
   };
@@ -102,12 +91,7 @@ function Row({ target }: { target: RxDocument<Target> }) {
       </ListItem>
 
       {showDialog && (
-        <EventsDialog
-          event={event}
-          handleClose={handleClose}
-          open={open}
-          persist={persist}
-        />
+        <EventsDialog event={event} handleClose={handleClose} open={open} persist={persist} />
       )}
     </>
   );

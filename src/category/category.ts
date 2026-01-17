@@ -59,9 +59,7 @@ const categorySchema = {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const schemaTyped = toTypedRxJsonSchema(categorySchema);
 
-export type Category = ExtractDocumentTypeFromTypedRxJsonSchema<
-  typeof schemaTyped
->;
+export type Category = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
 
 /**
  * RxDB collection configuration for categories.
@@ -86,8 +84,7 @@ export const useGetAllCategories = () =>
  * Returns the categories RxDB collection for direct mutations.
  * @returns RxCollection for insert/patch/remove operations
  */
-export const useGetCategoriesCollection = () =>
-  useRxCollection<Category>("categories");
+export const useGetCategoriesCollection = () => useRxCollection<Category>("categories");
 
 /**
  * Returns a single category by ID.
@@ -95,9 +92,8 @@ export const useGetCategoriesCollection = () =>
  * @returns Category document or undefined
  */
 export const useGetCategory = (id: string) => {
-  const { result: categories } = useRxData<Category>(
-    "categories",
-    (collection) => collection.findOne({ selector: { id: { $eq: id } } })
+  const { result: categories } = useRxData<Category>("categories", (collection) =>
+    collection.findOne({ selector: { id: { $eq: id } } })
   );
   return categories[0];
 };
@@ -108,9 +104,8 @@ export const useGetCategory = (id: string) => {
  * @returns Array of Category documents
  */
 export const useGetCategories = (ids: string[]) => {
-  const { result: categories } = useRxData<Category>(
-    "categories",
-    (collection) => collection.find({ selector: { id: { $in: ids } } })
+  const { result: categories } = useRxData<Category>("categories", (collection) =>
+    collection.find({ selector: { id: { $in: ids } } })
   );
   return categories;
 };
@@ -123,11 +118,7 @@ export const useGetCategories = (ids: string[]) => {
  * @param id - Parent category ID to exclude (or null)
  * @returns Array of potential child categories
  */
-export const useGetPossibleChildren = (
-  type: string,
-  config: string,
-  id: string | null
-) => {
+export const useGetPossibleChildren = (type: string, config: string, id: string | null) => {
   const selector: MangoQuerySelector<Category> = {
     type: { $eq: type },
     config: { $eq: config },
@@ -135,12 +126,10 @@ export const useGetPossibleChildren = (
   if (id) {
     selector.id = { $ne: id };
   }
-  const { result: categories } = useRxData<Category>(
-    "categories",
-    (collection) =>
-      collection.find({
-        selector,
-      })
+  const { result: categories } = useRxData<Category>("categories", (collection) =>
+    collection.find({
+      selector,
+    })
   );
   return categories;
 };
@@ -157,5 +146,4 @@ export const requiresInput = (type: string) => !["todo"].includes(type);
  * @param type - Category type string
  * @returns true if measurement is required ("value" and "valueAccumulative")
  */
-export const requiresMeasure = (type: string) =>
-  !["todo", "protocol"].includes(type);
+export const requiresMeasure = (type: string) => !["todo", "protocol"].includes(type);

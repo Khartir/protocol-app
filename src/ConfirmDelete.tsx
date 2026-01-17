@@ -40,12 +40,7 @@ function ConfirmDelete({
           <Button variant="outlined" fullWidth onClick={setClosed}>
             Abbrechen
           </Button>
-          <Button
-            color="primary"
-            variant="contained"
-            fullWidth
-            onClick={onConfirm}
-          >
+          <Button color="primary" variant="contained" fullWidth onClick={onConfirm}>
             Löschen
           </Button>
         </DialogActions>

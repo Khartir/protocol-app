@@ -17,9 +17,11 @@ bun run preview   # Preview production build
 This is a React 18 + TypeScript PWA for health/protocol tracking called "Protokol App". It uses RxDB for offline-first reactive data storage with IndexedDB (via Dexie).
 
 ### Target Device
+
 Primary device: Samsung Galaxy A10 (budget Android, small screen ~6.2", limited performance)
 
 ### Tech Stack
+
 - **Framework**: React 18 with Vite 5, SWC for Fast Refresh
 - **Database**: RxDB with Dexie storage, rxdb-hooks for React integration
 - **State**: Jotai atoms for minimal global state (`selectedDate`, `addState`)
@@ -28,6 +30,7 @@ Primary device: Samsung Galaxy A10 (budget Android, small screen ~6.2", limited 
 - **Dates**: dayjs with UTC/timezone plugins, RRule for recurrence schedules
 
 ### Routing (React Router v6)
+
 - `/` - Home: date picker, targets for day, events list
 - `/target` - Targets/goals management with RRule schedules
 - `/settings` - Category CRUD with backup/restore
@@ -36,6 +39,7 @@ Primary device: Samsung Galaxy A10 (budget Android, small screen ~6.2", limited 
 ### Data Collections (src/database/, src/category/, src/analytics/)
 
 **Categories** (`category.ts`) - Types: `todo`, `value`, `valueAccumulative`, `protocol`
+
 - `valueAccumulative` supports units (volume/time/mass) via `convert` package
 - Children array enables composite categories
 
@@ -48,6 +52,7 @@ Primary device: Samsung Galaxy A10 (budget Android, small screen ~6.2", limited 
 ### Key Patterns
 
 **RxDB hooks**: All data via custom hooks wrapping `useRxData()` and `useRxCollection()`
+
 ```typescript
 const { result: categories } = useRxData<Category>("categories", (c) => c.find());
 ```
@@ -61,6 +66,7 @@ const { result: categories } = useRxData<Category>("categories", (c) => c.find()
 **German UI**: All labels and messages in German
 
 ### File Organization
+
 - `src/app/` - App shell, routing, providers, bottom navigation
 - `src/database/` - RxDB setup and initialization
 - `src/home/` - Home page components (TargetList, EventsList, EventsDialog)

@@ -39,12 +39,7 @@ import { Form, Formik, useFormikContext } from "formik";
 import { useAtom, useAtomValue } from "jotai";
 import { addState } from "./app/Menu";
 import { v7 as uuid } from "uuid";
-import {
-  Graph,
-  graphTypes,
-  useGetAllGraphs,
-  useGetGraphsCollection,
-} from "./analytics/graph";
+import { Graph, graphTypes, useGetAllGraphs, useGetGraphsCollection } from "./analytics/graph";
 import { TableGraph } from "./analytics/TableGraph";
 import { useGetEventsForDateAndCategory } from "./category/event";
 import convert, { convertMany, Unit } from "convert";
@@ -62,9 +57,7 @@ import { PiecewiseColorConfig } from "../node_modules/@mui/x-charts/esm/models/c
 
 // Helper to handle convert's different return types:
 // .to("best") returns { quantity, unit }, .to(specificUnit) returns number
-function toQuantity(
-  converted: number | { quantity: number; unit: Unit }
-): number {
+function toQuantity(converted: number | { quantity: number; unit: Unit }): number {
   return typeof converted === "number" ? converted : converted.quantity;
 }
 
@@ -153,9 +146,7 @@ export function Analytics() {
 
     const reorderedGraphs = arrayMove(graphs, oldIndex, newIndex);
 
-    await Promise.all(
-      reorderedGraphs.map((graph, index) => graph.patch({ order: index }))
-    );
+    await Promise.all(reorderedGraphs.map((graph, index) => graph.patch({ order: index })));
   };
 
   return (
@@ -163,15 +154,8 @@ export function Analytics() {
       <DateSelect />
       <Heading>Auswertung</Heading>
       <AddLayer />
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={graphs.map((g) => g.id)}
-          strategy={verticalListSortingStrategy}
-        >
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={graphs.map((g) => g.id)} strategy={verticalListSortingStrategy}>
           {graphs.map((graph) => (
             <SortableAccordionRow graph={graph} key={graph.id} />
           ))}
@@ -192,8 +176,7 @@ function AddLayer() {
   const collection = useGetGraphsCollection();
 
   const persist = (data: Graph) => {
-    const maxOrder =
-      graphs.length > 0 ? Math.max(...graphs.map((g) => g.order ?? 0)) + 1 : 0;
+    const maxOrder = graphs.length > 0 ? Math.max(...graphs.map((g) => g.order ?? 0)) + 1 : 0;
     collection?.insert({ ...data, id: uuid(), order: maxOrder });
   };
 
@@ -269,9 +252,7 @@ function AnalyticsDialog({
     lowerLimit: config?.lowerLimit,
   };
   initialValues.range = initialValues.range
-    ? convert(Number.parseInt(initialValues.range), "seconds")
-        .to("best")
-        .toString()
+    ? convert(Number.parseInt(initialValues.range), "seconds").to("best").toString()
     : "";
 
   return (
@@ -280,9 +261,7 @@ function AnalyticsDialog({
         <Formik
           onSubmit={(values) => {
             if (values.range) {
-              values.range = convertMany(values.range.replace(",", "."))
-                .to("seconds")
-                .toString();
+              values.range = convertMany(values.range.replace(",", ".")).to("seconds").toString();
             }
             const config = {
               upperLimit: values.upperLimit,
@@ -346,12 +325,7 @@ function AnalyticsDialog({
                 <Button variant="outlined" fullWidth onClick={handleClose}>
                   Abbrechen
                 </Button>
-                <Button
-                  color="primary"
-                  variant="contained"
-                  fullWidth
-                  type="submit"
-                >
+                <Button color="primary" variant="contained" fullWidth type="submit">
                   Speichern
                 </Button>
               </Stack>
@@ -367,14 +341,9 @@ function SortableAccordionRow({ graph }: { graph: RxDocument<Graph> }) {
   const [open, setOpen] = useState(false);
   const { openDeleteConfirm, ConfirmDelete } = useDeleteConfirm(graph);
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: graph.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: graph.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -486,11 +455,7 @@ function LineGraph({ graph }: { graph: Graph }) {
   const fromDate = dayjs(to).subtract(Number.parseInt(graph.range), "seconds");
   const toDate = dayjs(to).endOf("day");
 
-  const data = useGetEventsForDateAndCategory(
-    fromDate.valueOf(),
-    toDate.valueOf(),
-    category
-  );
+  const data = useGetEventsForDateAndCategory(fromDate.valueOf(), toDate.valueOf(), category);
   if (!category) {
     return "";
   }
@@ -500,13 +465,9 @@ function LineGraph({ graph }: { graph: Graph }) {
   // Determine target unit from limits (if set) for consistent units
   let targetUnit: Unit | undefined;
   if (graph.config?.upperLimit) {
-    targetUnit = convertMany(graph.config.upperLimit.replace(",", ".")).to(
-      "best"
-    ).unit;
+    targetUnit = convertMany(graph.config.upperLimit.replace(",", ".")).to("best").unit;
   } else if (graph.config?.lowerLimit) {
-    targetUnit = convertMany(graph.config.lowerLimit.replace(",", ".")).to(
-      "best"
-    ).unit;
+    targetUnit = convertMany(graph.config.lowerLimit.replace(",", ".")).to("best").unit;
   }
 
   // Branch based on category type
@@ -558,9 +519,7 @@ function LineGraph({ graph }: { graph: Graph }) {
   let colorMap: PiecewiseColorConfig | undefined = undefined;
 
   if (graph.config?.upperLimit) {
-    const upperLimit = convertMany(
-      graph.config?.upperLimit.replace(",", ".")
-    ).to("best").quantity;
+    const upperLimit = convertMany(graph.config?.upperLimit.replace(",", ".")).to("best").quantity;
     series.push({
       data: new Array(dataSet.length).fill(upperLimit),
       showMark: false,
@@ -576,9 +535,7 @@ function LineGraph({ graph }: { graph: Graph }) {
 
   if (graph.config?.lowerLimit) {
     const lowerLimit = toQuantity(
-      convertMany(graph.config?.lowerLimit.replace(",", ".")).to(
-        targetUnit ?? "best"
-      )
+      convertMany(graph.config?.lowerLimit.replace(",", ".")).to(targetUnit ?? "best")
     );
     series.push({
       data: new Array(dataSet.length).fill(lowerLimit),
@@ -604,9 +561,7 @@ function LineGraph({ graph }: { graph: Graph }) {
           dataKey: "x",
           scaleType: "time",
           valueFormatter: (date) =>
-            isAccumulative
-              ? dayjs(date).format("DD.MM.")
-              : dayjs(date).format("HH:mm DD.MM."),
+            isAccumulative ? dayjs(date).format("DD.MM.") : dayjs(date).format("HH:mm DD.MM."),
         },
       ]}
       yAxis={[

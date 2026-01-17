@@ -8,14 +8,7 @@ import {
 } from "../category/category";
 import { validateMeasurement } from "../measurementValidation";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  Stack,
-  Alert,
-  TextField,
-} from "@mui/material";
+import { Button, Dialog, DialogContent, Stack, Alert, TextField } from "@mui/material";
 import { Event } from "../category/event";
 import { Form, Formik, useFormikContext } from "formik";
 import { useAtomValue } from "jotai";
@@ -51,9 +44,7 @@ export function EventsDialog({
 
   const category = useGetCategory(event.category);
 
-  if (
-    dayjs().hour(0).minute(0).second(0).millisecond(0).isBefore(dayjs(date))
-  ) {
+  if (dayjs().hour(0).minute(0).second(0).millisecond(0).isBefore(dayjs(date))) {
     return <AlertDialog open={open} handleClose={handleClose}></AlertDialog>;
   }
 
@@ -66,9 +57,7 @@ export function EventsDialog({
       <DialogContent>
         <Formik
           onSubmit={({ childCategory, ...values }) => {
-            const category = categories.filter(
-              (category) => category.id === values.category
-            )[0];
+            const category = categories.filter((category) => category.id === values.category)[0];
             // Validierung vor Konvertierung
             if (requiresMeasure(category?.type) && values.data) {
               const result = validateMeasurement(values.data, category.config);
@@ -118,12 +107,7 @@ export function EventsDialog({
                 <Button variant="outlined" fullWidth onClick={handleClose}>
                   Abbrechen
                 </Button>
-                <Button
-                  color="primary"
-                  variant="contained"
-                  fullWidth
-                  type="submit"
-                >
+                <Button color="primary" variant="contained" fullWidth type="submit">
                   Speichern
                 </Button>
               </Stack>
@@ -135,19 +119,11 @@ export function EventsDialog({
   );
 }
 
-function AlertDialog({
-  open,
-  handleClose,
-}: {
-  open: boolean;
-  handleClose: () => void;
-}) {
+function AlertDialog({ open, handleClose }: { open: boolean; handleClose: () => void }) {
   return (
     <Dialog open={open} onClose={handleClose}>
       <DialogContent>
-        <Alert severity="warning">
-          Ein Ziel in der Zukunft kann nicht erledigt werden.
-        </Alert>
+        <Alert severity="warning">Ein Ziel in der Zukunft kann nicht erledigt werden.</Alert>
       </DialogContent>
     </Dialog>
   );

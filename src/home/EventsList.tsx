@@ -1,16 +1,6 @@
 import { Heading } from "../styling/Heading";
-import {
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemButton,
-} from "@mui/material";
-import {
-  useGetEventsForDate,
-  Event,
-  useGetEventsCollection,
-} from "../category/event";
+import { List, ListItem, ListItemIcon, ListItemText, ListItemButton } from "@mui/material";
+import { useGetEventsForDate, Event, useGetEventsCollection } from "../category/event";
 import { useAtomValue, useAtom } from "jotai";
 import dayjs from "dayjs";
 import { selectedDate } from "./Home";
@@ -25,10 +15,7 @@ import { addState } from "../app/Menu";
 import { useDeleteConfirm } from "../ConfirmDelete";
 export function EventsList() {
   const date = useAtomValue(selectedDate);
-  const { result: events } = useGetEventsForDate(
-    date,
-    dayjs(date).add(1, "day").valueOf()
-  );
+  const { result: events } = useGetEventsForDate(date, dayjs(date).add(1, "day").valueOf());
   return (
     <>
       <Heading>Erledigt</Heading>
@@ -68,10 +55,7 @@ function Row({ event }: { event: RxDocument<Event> }) {
       <ListItem key={event.id} disablePadding>
         <ListItemButton onClick={handleClickOpen}>
           <ListItemIcon>{category?.icon}</ListItemIcon>
-          <ListItemText
-            primary={dayjs(event.timestamp).format("HH:mm")}
-            secondary={secondary}
-          />
+          <ListItemText primary={dayjs(event.timestamp).format("HH:mm")} secondary={secondary} />
           <ListItemIcon
             onClick={(e) => {
               e.stopPropagation();

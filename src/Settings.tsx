@@ -64,11 +64,7 @@ export function Settings() {
           <Row category={category} key={category.id} />
         ))}
       </List>
-      <Button
-        variant="outlined"
-        startIcon={<FileDownloadIcon />}
-        onClick={() => download(db)}
-      >
+      <Button variant="outlined" startIcon={<FileDownloadIcon />} onClick={() => download(db)}>
         Backup erstellen
       </Button>
       <Button
@@ -214,12 +210,7 @@ function CategoriesDialog({
                 <Button variant="outlined" fullWidth onClick={handleClose}>
                   Abbrechen
                 </Button>
-                <Button
-                  color="primary"
-                  variant="contained"
-                  fullWidth
-                  type="submit"
-                >
+                <Button color="primary" variant="contained" fullWidth type="submit">
                   Speichern
                 </Button>
               </Stack>
@@ -243,19 +234,13 @@ function ChildrenSelectWrapper() {
 function ChildrenSelect() {
   const { values } = useFormikContext<Category>();
 
-  const categories = useGetPossibleChildren(
-    values.type,
-    values.config,
-    values.id
-  );
+  const categories = useGetPossibleChildren(values.type, values.config, values.id);
 
   if (0 === categories.length) {
     return "";
   }
 
-  return (
-    <CategorySelect categories={categories} name="children" multiple={true} />
-  );
+  return <CategorySelect categories={categories} name="children" multiple={true} />;
 }
 
 function AddLayer() {
@@ -267,8 +252,7 @@ function AddLayer() {
 
   const collection = useGetCategoriesCollection();
 
-  const persist = (data: Category) =>
-    collection?.insert({ ...data, id: uuid() });
+  const persist = (data: Category) => collection?.insert({ ...data, id: uuid() });
 
   return (
     <>

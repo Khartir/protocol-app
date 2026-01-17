@@ -1,7 +1,4 @@
-import {
-  ExtractDocumentTypeFromTypedRxJsonSchema,
-  toTypedRxJsonSchema,
-} from "rxdb";
+import { ExtractDocumentTypeFromTypedRxJsonSchema, toTypedRxJsonSchema } from "rxdb";
 import { useRxCollection, useRxData } from "rxdb-hooks";
 
 /**
@@ -51,9 +48,7 @@ const graphSchema = {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const schemaTyped = toTypedRxJsonSchema(graphSchema);
 
-export type Graph = ExtractDocumentTypeFromTypedRxJsonSchema<
-  typeof schemaTyped
->;
+export type Graph = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
 
 /**
  * RxDB collection configuration for graphs.
@@ -72,9 +67,7 @@ export const graphCollection = {
  * @returns Reactive array of Graph documents
  */
 export const useGetAllGraphs = () =>
-  useRxData<Graph>("graphs", (collection) =>
-    collection.find().sort({ order: "asc" })
-  );
+  useRxData<Graph>("graphs", (collection) => collection.find().sort({ order: "asc" }));
 
 /**
  * Returns the graphs RxDB collection for direct mutations.

@@ -1,10 +1,4 @@
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  FormHelperText,
-} from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Select, FormHelperText } from "@mui/material";
 import { useFormikContext } from "formik";
 import { Category, requiresMeasure } from "./category/category";
 
@@ -66,16 +60,8 @@ export const MeasureSelect = () => {
  * toDefault(volumeCategory, "l", "2.5")  // → 2500 (ml)
  * toDefault(timeCategory, "min", "5")    // → 300 (seconds)
  */
-export const toDefault = (
-  category: Category,
-  unit: Unit,
-  value: string | Number
-) => {
-  return Math.floor(
-    convert(Number.parseInt(value.toString()), unit).to(
-      getDefaultUnit(category)
-    )
-  );
+export const toDefault = (category: Category, unit: Unit, value: string | Number) => {
+  return Math.floor(convert(Number.parseInt(value.toString()), unit).to(getDefaultUnit(category)));
 };
 
 /**

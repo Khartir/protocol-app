@@ -1,8 +1,5 @@
 import { RRule } from "rrule";
-import {
-  ExtractDocumentTypeFromTypedRxJsonSchema,
-  toTypedRxJsonSchema,
-} from "rxdb";
+import { ExtractDocumentTypeFromTypedRxJsonSchema, toTypedRxJsonSchema } from "rxdb";
 import { useRxCollection, useRxData } from "rxdb-hooks";
 import { useGetEventsForDateAndCategory } from "./event";
 import { useAtomValue } from "jotai";
@@ -43,9 +40,7 @@ export const targetSchema = {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const schemaTyped = toTypedRxJsonSchema(targetSchema);
 
-export type Target = ExtractDocumentTypeFromTypedRxJsonSchema<
-  typeof schemaTyped
->;
+export type Target = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
 
 /**
  * Returns all targets from the database.
@@ -116,10 +111,7 @@ export const useGetTargetStatus = (
         color: getColor(category, percentage),
       };
     case "valueAccumulative": {
-      const sum = events.reduce(
-        (result, event) => result + Number(event.data),
-        0
-      );
+      const sum = events.reduce((result, event) => result + Number(event.data), 0);
       let percentage = Math.min(100, (sum / Number(target.config)) * 100);
       const color = getColor(category, percentage);
 

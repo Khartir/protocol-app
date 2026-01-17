@@ -1,10 +1,4 @@
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  FormHelperText,
-} from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Select, FormHelperText } from "@mui/material";
 import { useFormikContext } from "formik";
 import { Category, useGetAllCategories } from "./category";
 

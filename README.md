@@ -30,13 +30,13 @@ bun run build
 
 ## Befehle
 
-| Befehl | Beschreibung |
-|--------|--------------|
-| `bun install` | Abhängigkeiten installieren |
-| `bun run dev` | Entwicklungsserver mit HMR |
-| `bun run build` | Produktions-Build |
-| `bun run lint` | ESLint ausführen |
-| `bun run preview` | Produktions-Build testen |
+| Befehl            | Beschreibung                |
+| ----------------- | --------------------------- |
+| `bun install`     | Abhängigkeiten installieren |
+| `bun run dev`     | Entwicklungsserver mit HMR  |
+| `bun run build`   | Produktions-Build           |
+| `bun run lint`    | ESLint ausführen            |
+| `bun run preview` | Produktions-Build testen    |
 
 ## Tech Stack
 

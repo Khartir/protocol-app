@@ -32,14 +32,14 @@ bun run dev
 
 ## Commands Reference
 
-| Command | Description |
-|---------|-------------|
-| `bun install` | Install all dependencies |
-| `bun run dev` | Start Vite dev server with HMR |
-| `bun run build` | Production build to `dist/` |
-| `bun run lint` | Run ESLint |
-| `bun run preview` | Preview production build locally |
-| `bun run generate-pwa-assets` | Generate PWA icons from source |
+| Command                       | Description                      |
+| ----------------------------- | -------------------------------- |
+| `bun install`                 | Install all dependencies         |
+| `bun run dev`                 | Start Vite dev server with HMR   |
+| `bun run build`               | Production build to `dist/`      |
+| `bun run lint`                | Run ESLint                       |
+| `bun run preview`             | Preview production build locally |
+| `bun run generate-pwa-assets` | Generate PWA icons from source   |
 
 ## Project Configuration
 
@@ -66,6 +66,7 @@ bun run dev
 ### Adding a New Page
 
 1. Create page component in `src/`:
+
    ```typescript
    // src/NewPage.tsx
    export function NewPage() {
@@ -74,6 +75,7 @@ bun run dev
    ```
 
 2. Add route in `src/app/router.tsx`:
+
    ```typescript
    {
      path: "/new-page",
@@ -95,6 +97,7 @@ bun run dev
 ### Adding a New Category Type
 
 1. Add type to `categoryTypes` in `src/category/category.ts`:
+
    ```typescript
    export const categoryTypes = {
      // existing types...
@@ -103,6 +106,7 @@ bun run dev
    ```
 
 2. Update schema enum:
+
    ```typescript
    type: {
      type: "string",
@@ -111,6 +115,7 @@ bun run dev
    ```
 
 3. Update schema version and add migration:
+
    ```typescript
    version: 3,
    // ...
@@ -121,6 +126,7 @@ bun run dev
    ```
 
 4. Update helper functions if needed:
+
    ```typescript
    export const requiresInput = (type: string) => !["todo", "newType"].includes(type);
    ```
@@ -130,6 +136,7 @@ bun run dev
 ### Adding a New Collection
 
 1. Create schema file in `src/category/` or appropriate directory:
+
    ```typescript
    export const newSchema = {
      version: 0,
@@ -146,6 +153,7 @@ bun run dev
    ```
 
 2. Add collection in `src/database/setup.ts`:
+
    ```typescript
    await database.addCollections({
      // existing collections...
@@ -154,12 +162,11 @@ bun run dev
    ```
 
 3. Create hooks for data access:
-   ```typescript
-   export const useGetAllNew = () =>
-     useRxData<NewType>("newCollection", (c) => c.find());
 
-   export const useGetNewCollection = () =>
-     useRxCollection<NewType>("newCollection");
+   ```typescript
+   export const useGetAllNew = () => useRxData<NewType>("newCollection", (c) => c.find());
+
+   export const useGetNewCollection = () => useRxCollection<NewType>("newCollection");
    ```
 
 ### Creating Custom Hooks
@@ -213,6 +220,7 @@ const setValue = useSetAtom(myAtom);
 ### RxDB DevMode
 
 In development mode, RxDB DevMode plugin is enabled automatically:
+
 - Schema validation on every operation
 - Detailed error messages
 - Query validation
@@ -227,6 +235,7 @@ In development mode, RxDB DevMode plugin is enabled automatically:
 ### React DevTools
 
 Install React DevTools browser extension for:
+
 - Component hierarchy inspection
 - Props/state debugging
 - Profiler for performance
@@ -234,15 +243,18 @@ Install React DevTools browser extension for:
 ### Common Issues
 
 **"Collection already exists"**
+
 - Clear IndexedDB and refresh
 - This happens when schema changes without proper migration
 
 **Timezone issues with targets**
+
 - Targets use UTC for RRule calculations
 - Events use local time
 - Check `dayjs().tz("utc", true)` usage
 
 **Unit conversion errors**
+
 - Check category config matches expected unit type
 - Validate input with `validateMeasurement()`
 
@@ -251,6 +263,7 @@ Install React DevTools browser extension for:
 ### Target Device
 
 Primary target: **Samsung Galaxy A10**
+
 - Budget Android device
 - ~6.2" screen
 - Limited CPU/RAM
@@ -297,6 +310,7 @@ Before deployment, test on target device:
 ### Browser Testing
 
 Test in:
+
 - Chrome (primary)
 - Firefox
 - Safari (if targeting iOS)

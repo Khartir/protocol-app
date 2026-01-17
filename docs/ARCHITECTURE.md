@@ -107,11 +107,11 @@ export function App() {
 
 React Router v6 with nested routes under the App shell:
 
-| Route | Component | Description |
-|-------|-----------|-------------|
-| `/` | `Home` | Daily targets and events |
-| `/target` | `Targets` | Goal/target management |
-| `/settings` | `Settings` | Category CRUD, backup/restore |
+| Route        | Component   | Description                   |
+| ------------ | ----------- | ----------------------------- |
+| `/`          | `Home`      | Daily targets and events      |
+| `/target`    | `Targets`   | Goal/target management        |
+| `/settings`  | `Settings`  | Category CRUD, backup/restore |
 | `/analytics` | `Analytics` | Charts and data visualization |
 
 The router uses `basename: import.meta.env.BASE_URL` for deployment flexibility.
@@ -144,10 +144,10 @@ App
 
 The app uses Jotai for minimal global state:
 
-| Atom | Location | Type | Purpose |
-|------|----------|------|---------|
-| `selectedDate` | `src/home/Home.tsx` | `number` | Currently selected date (timestamp) |
-| `addState` | `src/app/Menu.tsx` | `boolean` | Controls "add event" dialog visibility |
+| Atom           | Location            | Type      | Purpose                                |
+| -------------- | ------------------- | --------- | -------------------------------------- |
+| `selectedDate` | `src/home/Home.tsx` | `number`  | Currently selected date (timestamp)    |
+| `addState`     | `src/app/Menu.tsx`  | `boolean` | Controls "add event" dialog visibility |
 
 ```typescript
 // Selected date atom - defaults to start of today
@@ -165,6 +165,7 @@ All persistent data flows through RxDB hooks from `rxdb-hooks`:
 - **Collection hooks** (`useRxCollection`) - Direct collection access for mutations
 
 Pattern:
+
 ```typescript
 // Read data reactively
 const { result: categories } = useRxData<Category>("categories", (c) => c.find());
@@ -186,22 +187,22 @@ The database is initialized in `src/database/setup.ts`:
 
 ### Plugins
 
-| Plugin | Purpose |
-|--------|---------|
-| `RxDBDevModePlugin` | Development validation (dev only) |
-| `RxDBJsonDumpPlugin` | Backup/restore via JSON |
-| `RxDBMigrationSchemaPlugin` | Schema version migrations |
-| `RxDBQueryBuilderPlugin` | Query builder utilities |
-| `wrappedValidateAjvStorage` | Schema validation (dev only) |
+| Plugin                      | Purpose                           |
+| --------------------------- | --------------------------------- |
+| `RxDBDevModePlugin`         | Development validation (dev only) |
+| `RxDBJsonDumpPlugin`        | Backup/restore via JSON           |
+| `RxDBMigrationSchemaPlugin` | Schema version migrations         |
+| `RxDBQueryBuilderPlugin`    | Query builder utilities           |
+| `wrappedValidateAjvStorage` | Schema validation (dev only)      |
 
 ### Collections
 
-| Collection | Schema Version | Description |
-|------------|----------------|-------------|
-| `categories` | v2 | Category definitions with types and units |
-| `events` | v0 | Timestamped data entries |
-| `targets` | v0 | Goals with RRule schedules |
-| `graphs` | v2 | Analytics visualization configs |
+| Collection   | Schema Version | Description                               |
+| ------------ | -------------- | ----------------------------------------- |
+| `categories` | v2             | Category definitions with types and units |
+| `events`     | v0             | Timestamped data entries                  |
+| `targets`    | v0             | Goals with RRule schedules                |
+| `graphs`     | v2             | Analytics visualization configs           |
 
 See [DATA-SCHEMAS.md](./DATA-SCHEMAS.md) for detailed schema documentation.
 

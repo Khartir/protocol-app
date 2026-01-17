@@ -33,10 +33,7 @@ const measureKindMap: Record<string, MeasureKind> = {
  * validateMeasurement("500ml", "time")     // → "Falscher Einheitentyp..."
  * validateMeasurement("abc", "volume")     // → "Ungültige Eingabe..."
  */
-export function validateMeasurement(
-  value: string,
-  measureType?: string
-): true | string {
+export function validateMeasurement(value: string, measureType?: string): true | string {
   if (!value || value.trim() === "") {
     return true; // Leere Werte erlauben (Yup.required für Pflichtfelder)
   }
@@ -58,9 +55,7 @@ export function validateMeasurement(
     return true;
   } catch {
     const units = measureType ? unitExamples[measureType] : "";
-    return units
-      ? `Ungültige Eingabe. Gültige Einheiten: ${units}`
-      : "Ungültige Eingabe";
+    return units ? `Ungültige Eingabe. Gültige Einheiten: ${units}` : "Ungültige Eingabe";
   }
 }
 

@@ -34,9 +34,7 @@ export function DateSelect() {
       <Button
         variant="outlined"
         size="large"
-        onClick={() =>
-          setDate(dayjs().hour(0).minute(0).second(0).millisecond(0).valueOf())
-        }
+        onClick={() => setDate(dayjs().hour(0).minute(0).second(0).millisecond(0).valueOf())}
       >
         Heute
       </Button>
