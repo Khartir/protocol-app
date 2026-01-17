@@ -2,7 +2,7 @@ import { Dialog, DialogContent, Button, DialogActions } from "@mui/material";
 import { useState } from "react";
 import { RxDocument } from "rxdb";
 
-export function useDeleteConfirm(doc: RxDocument<any>) {
+export function useDeleteConfirm<T>(doc: RxDocument<T>) {
   const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
   const onDeleteConfirmClosed = () => {
     setOpenDeleteConfirm(false);

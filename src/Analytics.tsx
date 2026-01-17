@@ -576,6 +576,7 @@ function LineGraph({ graph }: { graph: Graph }) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function BarGraph({ graph }: { graph: Graph }) {
   return <></>;
 }

@@ -68,7 +68,7 @@ function Row({ target }: { target: RxDocument<Target> }) {
 
   const { value, percentage, expected, color } = useGetTargetStatus(target);
   let secondary = value;
-  if (!!expected) {
+  if (expected) {
     secondary += " von " + expected;
   }
 

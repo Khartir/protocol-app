@@ -60,7 +60,7 @@ export const MeasureSelect = () => {
  * toDefault(volumeCategory, "l", "2.5")  // → 2500 (ml)
  * toDefault(timeCategory, "min", "5")    // → 300 (seconds)
  */
-export const toDefault = (category: Category, unit: Unit, value: string | Number) => {
+export const toDefault = (category: Category, unit: Unit, value: string | number) => {
   return Math.floor(convert(Number.parseInt(value.toString()), unit).to(getDefaultUnit(category)));
 };
 
@@ -77,7 +77,7 @@ export const toDefault = (category: Category, unit: Unit, value: string | Number
  * toBest(volumeCategory, 2500)  // → "2.5 l" (or "2,5 l" in German)
  * toBest(timeCategory, 3661)    // → "1h 1min 1s"
  */
-export const toBest = (category: Category, value: string | Number): string => {
+export const toBest = (category: Category, value: string | number): string => {
   const intValue = Number.parseInt(value.toString());
   if (!category.config || isNaN(intValue)) {
     return "";
