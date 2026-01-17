@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import convert, { Unit } from "convert";
 import { Category } from "../category/category";
-import { getDefaultUnit } from "../MeasureSelect";
+import { getDefaultUnit } from "../measure-utils";
 
 /**
  * Aggregation mode type

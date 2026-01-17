@@ -37,7 +37,7 @@ import { AllCategorySelect } from "./category/CategorySelect";
 import { Form, Formik, useFormikContext } from "formik";
 
 import { useAtom, useAtomValue } from "jotai";
-import { addState } from "./app/Menu";
+import { addState } from "./app/atoms";
 import { v7 as uuid } from "uuid";
 import {
   Graph,
@@ -58,9 +58,10 @@ import { LineChart, LineSeries } from "@mui/x-charts/LineChart";
 import { Delete, Edit } from "@mui/icons-material";
 import { useState } from "react";
 import { RxDocument } from "rxdb";
-import { useDeleteConfirm } from "./ConfirmDelete";
-import { DateSelect, selectedDate } from "./home/Home";
-import { getDefaultUnit } from "./MeasureSelect";
+import { useDeleteConfirm } from "./useDeleteConfirm";
+import { DateSelect } from "./home/Home";
+import { selectedDate } from "./home/atoms";
+import { getDefaultUnit } from "./measure-utils";
 import { durationSchema, validateMeasurement } from "./measurementValidation";
 import { PiecewiseColorConfig } from "../node_modules/@mui/x-charts/esm/models/colorMapping.js";
 

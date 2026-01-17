@@ -3,16 +3,16 @@ import { List, ListItem, ListItemIcon, ListItemText, ListItemButton } from "@mui
 import { useGetEventsForDate, Event, useGetEventsCollection } from "../category/event";
 import { useAtomValue, useAtom } from "jotai";
 import dayjs from "dayjs";
-import { selectedDate } from "./Home";
+import { selectedDate } from "./atoms";
 import { useGetCategory } from "../category/category";
 import { useState } from "react";
 import { RxDocument } from "rxdb";
 import { v7 as uuid } from "uuid";
 import { Delete } from "@mui/icons-material";
-import { toBest } from "../MeasureSelect";
+import { toBest } from "../measure-utils";
 import { EventsDialog } from "./EventsDialog";
-import { addState } from "../app/Menu";
-import { useDeleteConfirm } from "../ConfirmDelete";
+import { addState } from "../app/atoms";
+import { useDeleteConfirm } from "../useDeleteConfirm";
 export function EventsList() {
   const date = useAtomValue(selectedDate);
   const { result: events } = useGetEventsForDate(date, dayjs(date).add(1, "day").valueOf());

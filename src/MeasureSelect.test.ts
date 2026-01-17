@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toBest, toDefault, getDefaultUnit } from "./MeasureSelect";
+import { toBest, toDefault, getDefaultUnit } from "./measure-utils";
 import {
   createVolumeCategory,
   createTimeCategory,

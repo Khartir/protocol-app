@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import dayjs from "dayjs";
 import { createCategory, createEvent } from "../test/mocks/test-data";
-import { prepareTableData } from "./TableGraph";
+import { prepareTableData } from "./table-data";
 
 /**
  * Helper to create a simple "value" category (e.g., blood pressure, weight)

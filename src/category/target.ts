@@ -4,9 +4,9 @@ import { useRxCollection, useRxData } from "rxdb-hooks";
 import { useGetEventsForDateAndCategory } from "./event";
 import { useAtomValue } from "jotai";
 import dayjs from "dayjs";
-import { selectedDate } from "../home/Home";
+import { selectedDate } from "../home/atoms";
 import { Category, useGetCategory } from "./category";
-import { toBest } from "../MeasureSelect";
+import { toBest } from "../measure-utils";
 
 /**
  * RxDB schema for the targets collection.

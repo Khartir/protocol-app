@@ -33,7 +33,7 @@ import { useAtom } from "jotai";
 import * as Yup from "yup";
 import { MeasureSelect } from "./MeasureSelect";
 import { Heading } from "./styling/Heading";
-import { addState } from "./app/Menu";
+import { addState } from "./app/atoms";
 import { Database } from "./database/setup";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import FileUploadIcon from "@mui/icons-material/FileUpload";

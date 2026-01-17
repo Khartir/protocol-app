@@ -1,11 +1,10 @@
 import { Button, Divider } from "@mui/material";
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import dayjs from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import { TargetList } from "./TargetList";
 import { EventsList } from "./EventsList";
-
-export const selectedDate = atom(dayjs().startOf("day").valueOf());
+import { selectedDate } from "./atoms";
 
 export function Home() {
   return (

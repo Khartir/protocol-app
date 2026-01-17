@@ -12,7 +12,7 @@ import {
 import { useAtomValue } from "jotai";
 import dayjs from "dayjs";
 import { useGetTargetsForDate, Target, useGetTargetStatus } from "../category/target";
-import { selectedDate } from "./Home";
+import { selectedDate } from "./atoms";
 import { requiresInput, useGetCategory } from "../category/category";
 import { Event, useGetEventsCollection } from "../category/event";
 import { useState } from "react";

@@ -23,6 +23,7 @@ export function useDeleteConfirm<T>(doc: RxDocument<T>) {
   };
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function ConfirmDelete({
   onConfirm,
   open,

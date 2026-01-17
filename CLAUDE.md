@@ -39,7 +39,7 @@ Primary device: Samsung Galaxy A10 (budget Android, small screen ~6.2", limited 
 
 - **Framework**: React 18 with Vite 5, SWC for Fast Refresh
 - **Database**: RxDB with Dexie storage, rxdb-hooks for React integration
-- **State**: Jotai atoms for minimal global state (`selectedDate`, `addState`)
+- **State**: Jotai atoms in dedicated files (`src/app/atoms.ts`, `src/home/atoms.ts`)
 - **UI**: Material-UI v6, @mui/x-charts, @mui/x-date-pickers
 - **Forms**: Formik + Yup validation
 - **Dates**: dayjs with UTC/timezone plugins, RRule for recurrence schedules
@@ -76,19 +76,19 @@ const { result: categories } = useRxData<Category>("categories", (c) => c.find()
 
 **Timezone handling**: Targets use UTC for RRule calculations. Events store local timestamps.
 
-**Unit conversion**: `MeasureSelect.tsx` has `toBest()` for display and `toDefault()` for storage
+**Unit conversion**: `measure-utils.ts` has `toBest()` for display and `toDefault()` for storage
 
 **German UI**: All labels and messages in German
 
 ### File Organization
 
-- `src/app/` - App shell, routing, providers, bottom navigation
+- `src/app/` - App shell, routing, providers, bottom navigation, atoms
 - `src/database/` - RxDB setup and initialization
-- `src/home/` - Home page components (TargetList, EventsList, EventsDialog)
+- `src/home/` - Home page components (TargetList, EventsList, EventsDialog), atoms
 - `src/category/` - Data schemas, hooks, CategorySelect component
-- `src/analytics/` - Graph schema and hooks
+- `src/analytics/` - Graph schema, hooks, table-data utilities
 - `src/styling/` - MUI theme, Heading component
-- Root `src/` - Page components (Analytics, Targets, Settings)
+- Root `src/` - Page components (Analytics, Targets, Settings), measure-utils, useDeleteConfirm hook
 
 ## Documentation
 

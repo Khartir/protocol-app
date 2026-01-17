@@ -10,6 +10,7 @@ import "dayjs/locale/de";
 /**
  * All providers that wrap the test component.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 function AllProviders({ children }: { children: ReactNode }) {
   return (
     <JotaiProvider>
@@ -41,5 +42,6 @@ export function renderWithProviders(ui: ReactElement, options?: Omit<RenderOptio
 }
 
 // Re-export everything from testing-library for convenience
+// eslint-disable-next-line react-refresh/only-export-components
 export * from "@testing-library/react";
 export { renderWithProviders as render };

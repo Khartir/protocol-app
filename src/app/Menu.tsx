@@ -1,9 +1,8 @@
 import { Add, Analytics, Flag, Home, Settings } from "@mui/icons-material";
 import { BottomNavigation, BottomNavigationAction, Fab, Paper } from "@mui/material";
-import { atom, useSetAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import { Link, useLocation } from "react-router-dom";
-
-export const addState = atom(false);
+import { addState } from "./atoms";
 
 export function Menu() {
   const setAdd = useSetAtom(addState);
