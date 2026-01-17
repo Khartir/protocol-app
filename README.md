@@ -7,6 +7,8 @@ Eine Progressive Web App (PWA) zum Protokollieren und Tracken von Gesundheitsdat
 - **Kategorien**: Verschiedene Tracking-Typen (Aufgaben, Messwerte, akkumulierte Werte, Protokolle)
 - **Ereignisse**: Zeitgestempelte Einträge mit optionalen Messwerten
 - **Ziele**: Wiederkehrende Ziele mit flexiblen Zeitplänen (täglich, wöchentlich, etc.)
+  - **Multi-Tag-Ziele**: Wöchentliche, monatliche oder benutzerdefinierte Zeiträume
+  - Ereignisse werden über den gesamten Zeitraum aggregiert
 - **Auswertungen**: Linien-Diagramme und Tabellen zur Visualisierung
 - **Offline-First**: Alle Daten werden lokal gespeichert (IndexedDB)
 - **Backup/Restore**: Export und Import aller Daten als JSON

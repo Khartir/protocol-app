@@ -137,14 +137,21 @@ const getCount = (target: Target, from: number, to: number) => {
 
 ### `useGetTargetsForDate(from, to)`
 
-Hook that returns targets scheduled for a date range.
+Hook that returns targets to display for a date range.
 
 ```typescript
 export const useGetTargetsForDate = (from: number, to: number) => {
   const targets = useGetAllTargets();
 
   return targets.result
-    .map((target) => (getCount(target, from, to) >= 1 ? target : null))
+    .map((target) => {
+      if (target.periodType === "daily") {
+        return getCount(target, from, to) >= 1 ? target : null;
+      }
+      // Multi-day: show if any occurrence in the full period
+      const boundaries = getPeriodBoundaries(target, from);
+      return getCount(target, boundaries.from, boundaries.to) >= 1 ? target : null;
+    })
     .filter((target) => target !== null);
 };
 ```
@@ -152,8 +159,15 @@ export const useGetTargetsForDate = (from: number, to: number) => {
 **Logic:**
 
 1. Fetch all targets
-2. For each target, check if `getCount() >= 1`
-3. Return only targets with at least one occurrence
+2. For **daily** targets: check if `getCount() >= 1` for the specific day
+3. For **multi-day** targets: calculate period boundaries and check if any occurrence exists
+4. Return only targets that should be displayed
+
+**Multi-day behavior:**
+
+- Weekly targets show every day of the week
+- Monthly targets show every day of the month
+- Custom targets show every day within the custom period
 
 **Usage:**
 
@@ -166,18 +180,63 @@ const todaysTargets = useGetTargetsForDate(from, to);
 
 ---
 
+### `getPeriodBoundaries(target, selectedDate)`
+
+Pure function that calculates period start and end timestamps for a target.
+
+```typescript
+export const getPeriodBoundaries = (
+  target: Target,
+  selectedDateValue: number
+): { from: number; to: number }
+```
+
+**Parameters:**
+
+- `target` - Target with `periodType` and optional `periodDays`/`weekStartDay`
+- `selectedDateValue` - Selected date timestamp (local time, milliseconds)
+
+**Returns:** Object with `from` and `to` timestamps (exclusive end)
+
+**Period calculations:**
+
+| Period Type | Calculation                                      |
+| ----------- | ------------------------------------------------ |
+| `daily`     | Single day: `[day start, next day start)`        |
+| `weekly`    | Full week based on `weekStartDay` (0=Sun, 1=Mon) |
+| `monthly`   | First to last day of calendar month              |
+| `custom`    | `periodDays` from DTSTART, repeating             |
+
+**Error handling:** Falls back to `daily` behavior if:
+
+- Invalid/unknown `periodType`
+- `custom` without `periodDays`
+- `custom` without parseable DTSTART in schedule
+
+---
+
 ### Target Status Calculation
 
-When calculating target completion, `getCount()` determines the expected count:
+`useGetTargetStatus()` calculates completion using period-aware boundaries:
 
 ```typescript
 // In useGetTargetStatus()
+const selectedDateValue = useAtomValue(selectedDate);
+const { from, to } = getPeriodBoundaries(target, selectedDateValue);
+const events = useGetEventsForDateAndCategory(from, to, category);
+
 case "todo":
 case "value":
   expected = getCount(target, from, to);
   // ...
   const percentage = Math.min((events.length / expected) * 100, 100);
 ```
+
+**Key change for multi-day targets:**
+
+- Events are aggregated from the entire period (not just the selected day)
+- For a weekly target, all events from Mon-Sun contribute to progress
+- The returned `from`/`to` values indicate the period range for UI display
 
 For `todo` and `value` types, `expected` is the number of schedule occurrences (how many times the target should be completed).
 
@@ -326,12 +385,71 @@ Complete flow for checking today's targets:
 const from = useAtomValue(selectedDate);
 const to = dayjs(from).add(1, "day").valueOf();
 
-// 2. Get scheduled targets
+// 2. Get scheduled targets (includes multi-day targets active for today)
 const targets = useGetTargetsForDate(from, to);
 
 // 3. For each target, get status
 targets.map((target) => {
   const status = useGetTargetStatus(target);
-  // status = { value, percentage, expected, color }
+  // status = { value, percentage, expected, color, from, to }
+
+  // For multi-day targets, show period range
+  if (target.periodType !== "daily") {
+    const fromDate = dayjs(status.from).format("DD.MM");
+    const toDate = dayjs(status.to).subtract(1, "day").format("DD.MM");
+    console.log(`Period: ${fromDate} - ${toDate}`);
+  }
 });
 ```
+
+---
+
+## Multi-Day Target Examples
+
+### Weekly Water Intake
+
+User wants to drink 14L of water per week:
+
+```typescript
+{
+  schedule: "DTSTART:20240101T000000Z\nRRULE:FREQ=WEEKLY",
+  config: "14000",      // 14L in ml
+  periodType: "weekly",
+  weekStartDay: 1,      // Week starts Monday
+}
+```
+
+- Target shows every day of the week
+- Events from Mon-Sun accumulate toward 14L goal
+- Progress resets at week boundary
+
+### Monthly Exercise Goal
+
+User wants to exercise 20 times per month:
+
+```typescript
+{
+  schedule: "DTSTART:20240101T000000Z\nRRULE:FREQ=MONTHLY",
+  config: "20",
+  periodType: "monthly",
+}
+```
+
+- Target shows every day of the month
+- All exercise events in the month count toward 20
+
+### Bi-Weekly Custom Period
+
+User wants to track something every 14 days:
+
+```typescript
+{
+  schedule: "DTSTART:20240101T000000Z\nRRULE:FREQ=DAILY;INTERVAL=14",
+  config: "1",
+  periodType: "custom",
+  periodDays: 14,
+}
+```
+
+- Period starts from DTSTART and repeats every 14 days
+- Events within each 14-day window accumulate

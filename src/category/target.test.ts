@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-import { getColor, getCount } from "./target";
+import { getColor, getCount, getPeriodBoundaries, targetCollection } from "./target";
 import { createCategory, createTarget } from "../test/mocks/test-data";
 
 // Initialize dayjs plugins
@@ -231,6 +231,241 @@ describe("useGetTargetStatus", () => {
       // Falls through from value case
       // percentage = (events.length / 0) * 100 = clamped to 100
       expect(true).toBe(true); // Placeholder - tested via component tests
+    });
+  });
+});
+
+describe("getPeriodBoundaries", () => {
+  describe("daily period", () => {
+    it("returns single day boundaries", () => {
+      const target = createTarget({ periodType: "daily" });
+      const selectedDate = dayjs("2024-01-15").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      expect(from).toBe(dayjs("2024-01-15").startOf("day").valueOf());
+      expect(to).toBe(dayjs("2024-01-16").startOf("day").valueOf());
+    });
+  });
+
+  describe("weekly period", () => {
+    it("returns Monday-Sunday boundaries when weekStartDay is 1", () => {
+      const target = createTarget({ periodType: "weekly", weekStartDay: 1 });
+      // Wednesday Jan 17, 2024
+      const selectedDate = dayjs("2024-01-17").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      // Week should start Monday Jan 15
+      expect(from).toBe(dayjs("2024-01-15").startOf("day").valueOf());
+      // Week should end Sunday Jan 21 (exclusive, so Jan 22 start)
+      expect(to).toBe(dayjs("2024-01-22").startOf("day").valueOf());
+    });
+
+    it("returns Sunday-Saturday boundaries when weekStartDay is 0", () => {
+      const target = createTarget({ periodType: "weekly", weekStartDay: 0 });
+      // Wednesday Jan 17, 2024
+      const selectedDate = dayjs("2024-01-17").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      // Week should start Sunday Jan 14
+      expect(from).toBe(dayjs("2024-01-14").startOf("day").valueOf());
+      // Week should end Saturday Jan 20 (exclusive, so Jan 21 start)
+      expect(to).toBe(dayjs("2024-01-21").startOf("day").valueOf());
+    });
+
+    it("handles selected date being the first day of week (Monday)", () => {
+      const target = createTarget({ periodType: "weekly", weekStartDay: 1 });
+      // Monday Jan 15, 2024
+      const selectedDate = dayjs("2024-01-15").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      expect(from).toBe(dayjs("2024-01-15").startOf("day").valueOf());
+      expect(to).toBe(dayjs("2024-01-22").startOf("day").valueOf());
+    });
+
+    it("handles selected date being the last day of week (Sunday)", () => {
+      const target = createTarget({ periodType: "weekly", weekStartDay: 1 });
+      // Sunday Jan 21, 2024
+      const selectedDate = dayjs("2024-01-21").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      expect(from).toBe(dayjs("2024-01-15").startOf("day").valueOf());
+      expect(to).toBe(dayjs("2024-01-22").startOf("day").valueOf());
+    });
+  });
+
+  describe("monthly period", () => {
+    it("returns first to last day of month", () => {
+      const target = createTarget({ periodType: "monthly" });
+      // Jan 15, 2024
+      const selectedDate = dayjs("2024-01-15").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      expect(from).toBe(dayjs("2024-01-01").startOf("day").valueOf());
+      expect(to).toBe(dayjs("2024-02-01").startOf("day").valueOf());
+    });
+
+    it("handles February correctly", () => {
+      const target = createTarget({ periodType: "monthly" });
+      // Feb 15, 2024 (leap year)
+      const selectedDate = dayjs("2024-02-15").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      expect(from).toBe(dayjs("2024-02-01").startOf("day").valueOf());
+      expect(to).toBe(dayjs("2024-03-01").startOf("day").valueOf());
+    });
+
+    it("handles December correctly (year boundary)", () => {
+      const target = createTarget({ periodType: "monthly" });
+      // Dec 15, 2024
+      const selectedDate = dayjs("2024-12-15").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      expect(from).toBe(dayjs("2024-12-01").startOf("day").valueOf());
+      expect(to).toBe(dayjs("2025-01-01").startOf("day").valueOf());
+    });
+  });
+
+  describe("custom period", () => {
+    it("calculates period from DTSTART with periodDays", () => {
+      const target = createTarget({
+        periodType: "custom",
+        periodDays: 14,
+        schedule: "DTSTART:20240101T000000Z\nRRULE:FREQ=DAILY",
+      });
+      // Jan 8, 2024 - within first 14-day period starting Jan 1
+      const selectedDate = dayjs("2024-01-08").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      expect(from).toBe(dayjs("2024-01-01").startOf("day").valueOf());
+      expect(to).toBe(dayjs("2024-01-15").startOf("day").valueOf());
+    });
+
+    it("calculates next period correctly", () => {
+      const target = createTarget({
+        periodType: "custom",
+        periodDays: 14,
+        schedule: "DTSTART:20240101T000000Z\nRRULE:FREQ=DAILY",
+      });
+      // Jan 20, 2024 - within second 14-day period starting Jan 15
+      const selectedDate = dayjs("2024-01-20").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      expect(from).toBe(dayjs("2024-01-15").startOf("day").valueOf());
+      expect(to).toBe(dayjs("2024-01-29").startOf("day").valueOf());
+    });
+  });
+
+  describe("error handling", () => {
+    it("falls back to daily when periodType is invalid", () => {
+      const target = createTarget({ periodType: "invalid" as never });
+      const selectedDate = dayjs("2024-01-15").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      expect(from).toBe(dayjs("2024-01-15").startOf("day").valueOf());
+      expect(to).toBe(dayjs("2024-01-16").startOf("day").valueOf());
+    });
+
+    it("falls back to daily when custom period has no periodDays", () => {
+      const target = createTarget({
+        periodType: "custom",
+        periodDays: undefined,
+      });
+      const selectedDate = dayjs("2024-01-15").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      expect(from).toBe(dayjs("2024-01-15").startOf("day").valueOf());
+      expect(to).toBe(dayjs("2024-01-16").startOf("day").valueOf());
+    });
+
+    it("falls back to daily when custom schedule has no DTSTART", () => {
+      const target = createTarget({
+        periodType: "custom",
+        periodDays: 14,
+        schedule: "RRULE:FREQ=DAILY",
+      });
+      const selectedDate = dayjs("2024-01-15").startOf("day").valueOf();
+
+      const { from, to } = getPeriodBoundaries(target, selectedDate);
+
+      expect(from).toBe(dayjs("2024-01-15").startOf("day").valueOf());
+      expect(to).toBe(dayjs("2024-01-16").startOf("day").valueOf());
+    });
+  });
+});
+
+describe("targetCollection migration", () => {
+  describe("v0 to v1 migration", () => {
+    it("adds periodType: 'daily' to existing targets", () => {
+      const oldTarget = {
+        id: "test-id",
+        name: "Test Target",
+        category: "cat-id",
+        schedule: "DTSTART:20240101T000000Z\nRRULE:FREQ=DAILY",
+        config: "1",
+      };
+
+      const migrated = targetCollection.migrationStrategies[1](oldTarget);
+
+      expect(migrated.periodType).toBe("daily");
+    });
+
+    it("adds weekStartDay: 1 (Monday) to existing targets", () => {
+      const oldTarget = {
+        id: "test-id",
+        name: "Test Target",
+        category: "cat-id",
+        schedule: "DTSTART:20240101T000000Z\nRRULE:FREQ=DAILY",
+        config: "1",
+      };
+
+      const migrated = targetCollection.migrationStrategies[1](oldTarget);
+
+      expect(migrated.weekStartDay).toBe(1);
+    });
+
+    it("preserves all existing fields", () => {
+      const oldTarget = {
+        id: "test-id",
+        name: "Test Target",
+        category: "cat-id",
+        schedule: "DTSTART:20240101T000000Z\nRRULE:FREQ=WEEKLY",
+        config: "5",
+      };
+
+      const migrated = targetCollection.migrationStrategies[1](oldTarget);
+
+      expect(migrated.id).toBe("test-id");
+      expect(migrated.name).toBe("Test Target");
+      expect(migrated.category).toBe("cat-id");
+      expect(migrated.schedule).toBe("DTSTART:20240101T000000Z\nRRULE:FREQ=WEEKLY");
+      expect(migrated.config).toBe("5");
+    });
+
+    it("converts numeric config to string", () => {
+      const oldTarget = {
+        id: "test-id",
+        name: "Test Target",
+        category: "cat-id",
+        schedule: "DTSTART:20240101T000000Z\nRRULE:FREQ=DAILY",
+        config: 1, // number instead of string
+      };
+
+      const migrated = targetCollection.migrationStrategies[1](oldTarget as never);
+
+      expect(migrated.config).toBe("1");
+      expect(typeof migrated.config).toBe("string");
     });
   });
 });

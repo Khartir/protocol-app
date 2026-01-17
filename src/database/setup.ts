@@ -5,7 +5,7 @@ import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
 import { categoryCollection } from "../category/category";
 import { useEffect, useState } from "react";
 import { eventSchema } from "../category/event";
-import { targetSchema } from "../category/target";
+import { targetCollection } from "../category/target";
 import { RxDBJsonDumpPlugin } from "rxdb/plugins/json-dump";
 import { RxDBMigrationSchemaPlugin } from "rxdb/plugins/migration-schema";
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
@@ -31,7 +31,7 @@ const initialize = async () => {
   await database.addCollections({
     categories: categoryCollection,
     events: { schema: eventSchema },
-    targets: { schema: targetSchema },
+    targets: targetCollection,
     graphs: graphCollection,
   });
 
@@ -40,11 +40,17 @@ const initialize = async () => {
 
 export type Database = Awaited<ReturnType<typeof initialize>>;
 
+// Cache the database promise to prevent duplicate initialization in StrictMode
+let dbPromise: Promise<Database> | null = null;
+
 export const useDatabase = () => {
   const [db, setDb] = useState<Database>();
 
   useEffect(() => {
-    initialize().then(setDb);
+    if (!dbPromise) {
+      dbPromise = initialize();
+    }
+    dbPromise.then(setDb);
   }, []);
 
   return db;

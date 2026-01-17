@@ -4,11 +4,15 @@ import {
   Button,
   Dialog,
   DialogContent,
+  FormControl,
+  InputLabel,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  MenuItem,
+  Select,
   Stack,
   TextField,
 } from "@mui/material";
@@ -93,6 +97,14 @@ const validationSchema = Yup.object().shape({
   category: Yup.string().required("Pflichtfeld"),
   schedule: Yup.string().required("Pflichtfeld"),
   config: Yup.string(),
+  periodType: Yup.string().oneOf(["daily", "weekly", "monthly", "custom"]).required("Pflichtfeld"),
+  weekStartDay: Yup.number().oneOf([0, 1]),
+  periodDays: Yup.number()
+    .min(1, "Mindestens 1 Tag")
+    .when("periodType", {
+      is: "custom",
+      then: (schema) => schema.required("Pflichtfeld"),
+    }),
 });
 
 function TargetsDialog({
@@ -165,6 +177,52 @@ function TargetsDialog({
                   rruleString={formik.values.schedule}
                   onChange={(value) => formik.setFieldValue("schedule", value)}
                 />
+                <FormControl fullWidth>
+                  <InputLabel id="periodType-label">Zeitraum</InputLabel>
+                  <Select
+                    labelId="periodType-label"
+                    name="periodType"
+                    value={formik.values.periodType}
+                    label="Zeitraum"
+                    onChange={formik.handleChange}
+                  >
+                    <MenuItem value="daily">Täglich</MenuItem>
+                    <MenuItem value="weekly">Wöchentlich</MenuItem>
+                    <MenuItem value="monthly">Monatlich</MenuItem>
+                    <MenuItem value="custom">Benutzerdefiniert</MenuItem>
+                  </Select>
+                </FormControl>
+                {formik.values.periodType === "weekly" && (
+                  <FormControl fullWidth>
+                    <InputLabel id="weekStartDay-label">Woche beginnt am</InputLabel>
+                    <Select
+                      labelId="weekStartDay-label"
+                      name="weekStartDay"
+                      value={formik.values.weekStartDay}
+                      label="Woche beginnt am"
+                      onChange={formik.handleChange}
+                    >
+                      <MenuItem value={1}>Montag</MenuItem>
+                      <MenuItem value={0}>Sonntag</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+                {formik.values.periodType === "custom" && (
+                  <TextField
+                    fullWidth
+                    name="periodDays"
+                    label="Anzahl Tage"
+                    type="number"
+                    value={formik.values.periodDays ?? ""}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.periodDays && Boolean(formik.errors.periodDays)}
+                    helperText={formik.touched.periodDays && formik.errors.periodDays}
+                    slotProps={{
+                      htmlInput: { min: 1 },
+                    }}
+                  />
+                )}
                 <ValueInput name="config" />
                 <Button variant="outlined" fullWidth onClick={handleClose}>
                   Abbrechen
@@ -195,7 +253,15 @@ function AddLayer() {
   return (
     <>
       <TargetsDialog
-        target={{ name: "", category: "", id: "", schedule: "", config: "" }}
+        target={{
+          name: "",
+          category: "",
+          id: "",
+          schedule: "",
+          config: "",
+          periodType: "daily",
+          weekStartDay: 1,
+        }}
         handleClose={handleClose}
         persist={persist}
         open={open}

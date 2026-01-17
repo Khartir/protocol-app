@@ -66,10 +66,16 @@ function Row({ target }: { target: RxDocument<Target> }) {
 
   const persist = (data: Event) => collection?.insert(data);
 
-  const { value, percentage, expected, color } = useGetTargetStatus(target);
-  let secondary = value;
+  const { value, percentage, expected, color, from, to } = useGetTargetStatus(target);
+  let secondary = String(value);
   if (expected) {
     secondary += " von " + expected;
+  }
+  // Show period range for multi-day targets
+  if (target.periodType !== "daily") {
+    const fromDate = dayjs(from).format("DD.MM");
+    const toDate = dayjs(to).subtract(1, "day").format("DD.MM"); // subtract 1 because to is exclusive
+    secondary += ` (${fromDate} - ${toDate})`;
   }
 
   return (

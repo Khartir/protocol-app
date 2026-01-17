@@ -10,7 +10,7 @@ The app uses four RxDB collections stored in IndexedDB:
 | ------------ | -------------- | ------------------------------------------------ |
 | `categories` | v2             | Category definitions (types, units, hierarchies) |
 | `events`     | v0             | Timestamped data entries                         |
-| `targets`    | v0             | Goals with recurring schedules                   |
+| `targets`    | v1             | Goals with recurring schedules and periods       |
 | `graphs`     | v2             | Analytics visualization configs                  |
 
 ---
@@ -117,19 +117,39 @@ useGetEventsForDateAndCategory(from: number, to: number, category: Category)
 ## Targets Collection
 
 **File:** `src/category/target.ts`
-**Schema Version:** 0
+**Schema Version:** 1
 
-Targets define recurring goals with RRule schedules.
+Targets define recurring goals with RRule schedules and configurable period types.
 
 ### Schema
 
-| Field      | Type             | Required | Description                                        |
-| ---------- | ---------------- | -------- | -------------------------------------------------- |
-| `id`       | string (max 100) | Yes      | UUID v7 primary key                                |
-| `name`     | string           | No       | Display name for the target                        |
-| `category` | string           | Yes      | Foreign key to Categories collection               |
-| `schedule` | string           | Yes      | RRule string (iCalendar RRULE format)              |
-| `config`   | string           | Yes      | Target value (e.g., expected count or measurement) |
+| Field          | Type             | Required | Description                                        |
+| -------------- | ---------------- | -------- | -------------------------------------------------- |
+| `id`           | string (max 100) | Yes      | UUID v7 primary key                                |
+| `name`         | string           | No       | Display name for the target                        |
+| `category`     | string           | Yes      | Foreign key to Categories collection               |
+| `schedule`     | string           | Yes      | RRule string (iCalendar RRULE format)              |
+| `config`       | string           | Yes      | Target value (e.g., expected count or measurement) |
+| `periodType`   | enum             | Yes      | Period for event aggregation                       |
+| `periodDays`   | number           | No       | Custom period length in days (for `custom` type)   |
+| `weekStartDay` | number           | Yes      | Week start day (0=Sunday, 1=Monday)                |
+
+### Period Types
+
+Targets can span multiple days. The `periodType` determines how events are aggregated:
+
+| Type      | German Label      | Description                                   |
+| --------- | ----------------- | --------------------------------------------- |
+| `daily`   | Täglich           | Single day (default, original behavior)       |
+| `weekly`  | Wöchentlich       | Full week, respects `weekStartDay`            |
+| `monthly` | Monatlich         | Full calendar month                           |
+| `custom`  | Benutzerdefiniert | Custom period using `periodDays` from DTSTART |
+
+**Multi-day targets:**
+
+- Display every day within their period
+- Aggregate events from the entire period
+- Show period range in UI (e.g., "500 ml von 1 l (13.01 - 19.01)")
 
 ### Schedule Format
 
@@ -160,8 +180,12 @@ interface TargetStatus {
   percentage: number; // Completion 0-100
   expected: string | number; // Target value
   color: string; // CSS color-mix expression
+  from: number; // Period start timestamp
+  to: number; // Period end timestamp (exclusive)
 }
 ```
+
+For multi-day targets, `from` and `to` represent the full period boundaries.
 
 ### Color Coding
 
@@ -172,6 +196,12 @@ Progress color uses CSS `color-mix()`:
 | 0%         | Red    | Green    |
 | 50%        | Yellow | Yellow   |
 | 100%       | Green  | Red      |
+
+### Migration History
+
+| From | To  | Changes                                                                    |
+| ---- | --- | -------------------------------------------------------------------------- |
+| 0    | 1   | Added `periodType`, `periodDays`, `weekStartDay`; ensured config is string |
 
 ---
 
@@ -268,6 +298,8 @@ Categories can have child categories via the `children` array. When querying eve
 ### From `target.ts`
 
 - `targetSchema` - RxDB schema definition
+- `targetCollection` - RxDB collection config with migrations
+- `getPeriodBoundaries(target, selectedDate)` - Calculate period start/end for a target
 
 ### From `graph.ts`
 

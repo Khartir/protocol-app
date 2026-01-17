@@ -50,6 +50,8 @@ export function createTarget(overrides: Partial<Target> = {}): Target {
     // Daily schedule at midnight UTC
     schedule: "DTSTART:20240101T000000Z\nRRULE:FREQ=DAILY;INTERVAL=1",
     config: "1",
+    periodType: "daily",
+    weekStartDay: 1,
     ...overrides,
   };
 }
