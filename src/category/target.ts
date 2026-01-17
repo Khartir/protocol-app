@@ -136,7 +136,16 @@ export const useGetTargetStatus = (
   }
 };
 
-const getCount = (target: Target, from: number, to: number) => {
+/**
+ * Calculates how many times a target is scheduled in a date range.
+ * Uses RRule evaluation with UTC timezone conversion.
+ *
+ * @param target - Target with RRule schedule
+ * @param from - Start timestamp (inclusive, local time milliseconds)
+ * @param to - End timestamp (exclusive, local time milliseconds)
+ * @returns Number of scheduled occurrences
+ */
+export const getCount = (target: Target, from: number, to: number) => {
   const rule = RRule.fromString(target.schedule);
   // sub 1 second, because the from date is not inclusive
   // convert to utc because rrule requires utc and we work in local time
@@ -145,7 +154,16 @@ const getCount = (target: Target, from: number, to: number) => {
   return rule.between(fromDate.toDate(), toDate.toDate()).length;
 };
 
-function getColor(category: Category, percentage: number) {
+/**
+ * Calculates the color for a target based on completion percentage.
+ * Returns a CSS color-mix value transitioning from red -> yellow -> green.
+ * For inverted categories, the color scheme is reversed.
+ *
+ * @param category - Category (used for inverted flag)
+ * @param percentage - Completion percentage (0-100)
+ * @returns CSS color-mix string
+ */
+export function getColor(category: Category, percentage: number) {
   let colors = ["red", "yellow", "green"];
   if (category.inverted) {
     colors = colors.reverse();
