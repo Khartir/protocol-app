@@ -5,12 +5,243 @@ import weekOfYear from "dayjs/plugin/weekOfYear";
 import { Graph } from "./graph";
 import { selectedDate } from "../home/Home";
 import { Category, useGetCategory, useGetCategories } from "../category/category";
-import { useGetEventsForDateAndCategory } from "../category/event";
+import { Event, useGetEventsForDateAndCategory } from "../category/event";
 import { getDefaultUnit, toBest } from "../MeasureSelect";
 import { convertMany } from "convert";
 import { getAggregationBoundaries, AggregationMode } from "./aggregation";
 
 dayjs.extend(weekOfYear);
+
+// Types for prepareTableData
+export interface Period {
+  from: number;
+  to: number;
+  key: string;
+  label: string;
+}
+
+interface EventEntry {
+  time: string;
+  displayValue: string;
+  rawValue: number;
+}
+
+interface SimpleValuePeriodData {
+  label: string;
+  key: string;
+  events: EventEntry[];
+  sum: number;
+}
+
+interface AccumulatedPeriodData {
+  label: string;
+  key: string;
+  sum: number;
+}
+
+interface WithChildrenPeriodData {
+  label: string;
+  key: string;
+  children: { name: string; value: number }[];
+  sum: number;
+}
+
+export type TableData =
+  | { type: "simpleValueMultiple"; periods: SimpleValuePeriodData[] }
+  | { type: "simpleValueSingle"; periods: AccumulatedPeriodData[] }
+  | { type: "accumulated"; periods: AccumulatedPeriodData[] }
+  | { type: "withChildren"; periods: WithChildrenPeriodData[] }
+  | { type: "protocol"; periods: AccumulatedPeriodData[] };
+
+export interface PrepareTableDataParams {
+  events: Event[];
+  category: Category;
+  childCategories: Category[];
+  periods: Period[];
+  aggregationMode: AggregationMode;
+  weekStartDay: number;
+  aggregationDays: number | undefined;
+}
+
+/**
+ * Prepare table data for rendering.
+ * For simple value categories: returns individual events (not summed).
+ * For accumulated/protocol categories: returns summed values per period.
+ */
+export function prepareTableData({
+  events,
+  category,
+  childCategories,
+  periods,
+  aggregationMode,
+  weekStartDay,
+  aggregationDays,
+}: PrepareTableDataParams): TableData {
+  const hasChildren = (category.children?.length ?? 0) > 0;
+  const isProtocol = category.type === "protocol";
+  const isSimpleValue = category.type === "value";
+  const defaultUnit = getDefaultUnit(category);
+
+  // For simple value categories without children, store individual events
+  if (isSimpleValue && !hasChildren) {
+    const periodEvents = new Map<string, EventEntry[]>();
+
+    for (const period of periods) {
+      periodEvents.set(period.key, []);
+    }
+
+    for (const event of events) {
+      const eventBoundaries = getAggregationBoundaries(
+        aggregationMode,
+        weekStartDay,
+        aggregationDays,
+        event.timestamp
+      );
+      const periodKey = String(eventBoundaries.from);
+      const eventList = periodEvents.get(periodKey);
+
+      if (eventList) {
+        let rawValue = 0;
+        let displayValue = event.data;
+
+        if (defaultUnit) {
+          try {
+            rawValue = Math.round(convertMany(event.data.replace(",", ".")).to(defaultUnit));
+            displayValue = toBest(category, rawValue).replace(".", ",");
+          } catch {
+            displayValue = event.data;
+          }
+        }
+
+        eventList.push({
+          time: dayjs(event.timestamp).format("HH:mm"),
+          displayValue,
+          rawValue,
+        });
+      }
+    }
+
+    // Check if any period has multiple events
+    const hasMultipleEventsInAnyPeriod = Array.from(periodEvents.values()).some(
+      (eventList) => eventList.length > 1
+    );
+
+    if (hasMultipleEventsInAnyPeriod) {
+      return {
+        type: "simpleValueMultiple",
+        periods: periods.map((period) => {
+          const eventList = periodEvents.get(period.key) ?? [];
+          const sum = eventList.reduce((acc, e) => acc + e.rawValue, 0);
+          return {
+            label: period.label,
+            key: period.key,
+            events: eventList,
+            sum,
+          };
+        }),
+      };
+    } else {
+      // Single event per period - use simple format
+      return {
+        type: "simpleValueSingle",
+        periods: periods.map((period) => {
+          const eventList = periodEvents.get(period.key) ?? [];
+          const sum = eventList.length > 0 ? eventList[0].rawValue : 0;
+          return {
+            label: period.label,
+            key: period.key,
+            sum,
+          };
+        }),
+      };
+    }
+  }
+
+  // For accumulated/protocol categories, sum values
+  const periodData = new Map<string, Map<string, number>>();
+
+  for (const period of periods) {
+    periodData.set(period.key, new Map());
+  }
+
+  for (const event of events) {
+    const eventBoundaries = getAggregationBoundaries(
+      aggregationMode,
+      weekStartDay,
+      aggregationDays,
+      event.timestamp
+    );
+    const periodKey = String(eventBoundaries.from);
+    const periodMap = periodData.get(periodKey);
+
+    if (periodMap) {
+      const current = periodMap.get(event.category) ?? 0;
+      let increment: number;
+      if (isProtocol) {
+        increment = 1;
+      } else {
+        increment = Number(event.data || 0);
+      }
+      periodMap.set(event.category, current + increment);
+    }
+  }
+
+  if (hasChildren) {
+    return {
+      type: "withChildren",
+      periods: periods.map((period) => {
+        const periodMap = periodData.get(period.key)!;
+        const children: { name: string; value: number }[] = [];
+        let sum = 0;
+
+        childCategories.forEach((child) => {
+          const value = periodMap.get(child.id) ?? 0;
+          if (value > 0) {
+            children.push({
+              name: `${child.icon ?? ""} ${child.name}`.trim(),
+              value,
+            });
+            sum += value;
+          }
+        });
+
+        return {
+          label: period.label,
+          key: period.key,
+          children,
+          sum,
+        };
+      }),
+    };
+  }
+
+  if (isProtocol) {
+    return {
+      type: "protocol",
+      periods: periods.map((period) => {
+        const periodMap = periodData.get(period.key)!;
+        return {
+          label: period.label,
+          key: period.key,
+          sum: periodMap.get(category.id) ?? 0,
+        };
+      }),
+    };
+  }
+
+  // Default: accumulated without children
+  return {
+    type: "accumulated",
+    periods: periods.map((period) => {
+      const periodMap = periodData.get(period.key)!;
+      return {
+        label: period.label,
+        key: period.key,
+        sum: periodMap.get(category.id) ?? 0,
+      };
+    }),
+  };
+}
 
 interface TableGraphProps {
   graph: Graph;
@@ -64,15 +295,7 @@ export function TableGraph({ graph }: TableGraphProps) {
     return <Typography color="error">Kategorie nicht gefunden</Typography>;
   }
 
-  const hasChildren = (category.children?.length ?? 0) > 0;
-
   // Build list of all periods in range
-  interface Period {
-    from: number;
-    to: number;
-    key: string;
-    label: string;
-  }
   const periods: Period[] = [];
   let currentDate = fromDate.startOf("day");
   const endDate = toDate.startOf("day");
@@ -116,101 +339,104 @@ export function TableGraph({ graph }: TableGraphProps) {
     currentDate = dayjs(boundaries.to);
   }
 
-  // Group events by period and category
-  // Map<periodKey, Map<categoryId, sum>>
-  const periodData = new Map<string, Map<string, number>>();
+  // Prepare table data using the extracted function
+  const tableData = prepareTableData({
+    events,
+    category,
+    childCategories,
+    periods,
+    aggregationMode,
+    weekStartDay,
+    aggregationDays,
+  });
 
-  for (const period of periods) {
-    periodData.set(period.key, new Map());
-  }
-
-  const isProtocol = category.type === "protocol";
-  const isSimpleValue = category.type === "value";
-  const defaultUnit = getDefaultUnit(category);
-
-  for (const event of events) {
-    // Find which period this event belongs to
-    const eventBoundaries = getAggregationBoundaries(
-      aggregationMode,
-      weekStartDay,
-      aggregationDays,
-      event.timestamp
-    );
-    const periodKey = String(eventBoundaries.from);
-    const periodMap = periodData.get(periodKey);
-
-    if (periodMap) {
-      const current = periodMap.get(event.category) ?? 0;
-      let increment: number;
-      if (isProtocol) {
-        // Protocol categories: count entries
-        increment = 1;
-      } else if (isSimpleValue && defaultUnit) {
-        // Simple measurements: stored with unit, convert to base unit
-        try {
-          increment = Math.round(convertMany(event.data.replace(",", ".")).to(defaultUnit));
-        } catch {
-          increment = 0;
-        }
-      } else {
-        // Accumulated values: stored as raw number
-        increment = Number(event.data || 0);
-      }
-      periodMap.set(event.category, current + increment);
-    }
-  }
-
-  if (hasChildren) {
-    // Compact list per period with subcategory breakdown
-    const activeChildren = childCategories.filter((child) => {
-      for (const periodMap of periodData.values()) {
-        if ((periodMap.get(child.id) ?? 0) > 0) return true;
-      }
-      return false;
-    });
-
-    if (activeChildren.length === 0) {
+  // Render based on data type
+  if (tableData.type === "withChildren") {
+    const hasAnyData = tableData.periods.some((p) => p.children.length > 0);
+    if (!hasAnyData) {
       return <Typography color="text.secondary">Keine Daten</Typography>;
     }
 
     return (
       <List dense sx={{ mb: 2 }}>
-        {periods.map((period) => {
-          const periodMap = periodData.get(period.key)!;
-          let periodTotal = 0;
-          const childValues: { name: string; value: number }[] = [];
-
-          activeChildren.forEach((child) => {
-            const value = periodMap.get(child.id) ?? 0;
-            if (value > 0) {
-              childValues.push({
-                name: `${child.icon ?? ""} ${child.name}`.trim(),
-                value,
-              });
-              periodTotal += value;
-            }
-          });
-
-          return (
-            <ListItem
-              key={period.key}
-              sx={{ flexDirection: "column", alignItems: "flex-start", py: 1 }}
-            >
-              <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
-                {period.label}
+        {tableData.periods.map((period) => (
+          <ListItem
+            key={period.key}
+            sx={{ flexDirection: "column", alignItems: "flex-start", py: 1 }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+              {period.label}
+            </Typography>
+            {period.children.length > 0 ? (
+              <Box sx={{ pl: 1, width: "100%" }}>
+                {period.children.map((cv, idx) => (
+                  <Box key={idx} sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2" sx={{ flex: 1 }}>
+                      {cv.name}
+                    </Typography>
+                    <Typography variant="body2" sx={valueStyle}>
+                      {formatValue(category, cv.value)}
+                    </Typography>
+                  </Box>
+                ))}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    borderTop: "1px solid",
+                    borderColor: "divider",
+                    mt: 0.5,
+                    pt: 0.5,
+                  }}
+                >
+                  <Typography variant="body2" fontWeight="bold" sx={{ flex: 1 }}>
+                    Gesamt
+                  </Typography>
+                  <Typography variant="body2" fontWeight="bold" sx={valueStyle}>
+                    {formatValue(category, period.sum)}
+                  </Typography>
+                </Box>
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ pl: 1 }}>
+                -
               </Typography>
-              {childValues.length > 0 ? (
-                <Box sx={{ pl: 1, width: "100%" }}>
-                  {childValues.map((cv, idx) => (
-                    <Box key={idx} sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Typography variant="body2" sx={{ flex: 1 }}>
-                        {cv.name}
-                      </Typography>
-                      <Typography variant="body2" sx={valueStyle}>
-                        {formatValue(category, cv.value)}
-                      </Typography>
-                    </Box>
-                  ))}
+            )}
+          </ListItem>
+        ))}
+      </List>
+    );
+  }
+
+  if (tableData.type === "simpleValueMultiple") {
+    const hasAnyData = tableData.periods.some((p) => p.events.length > 0);
+    if (!hasAnyData) {
+      return <Typography color="text.secondary">Keine Daten</Typography>;
+    }
+
+    return (
+      <List dense sx={{ mb: 2 }}>
+        {tableData.periods.map((period) => (
+          <ListItem
+            key={period.key}
+            sx={{ flexDirection: "column", alignItems: "flex-start", py: 1 }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+              {period.label}
+            </Typography>
+            {period.events.length > 0 ? (
+              <Box sx={{ pl: 1, width: "100%" }}>
+                {period.events.map((ev, idx) => (
+                  <Box key={idx} sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2" sx={{ flex: 1 }}>
+                      {ev.time}
+                    </Typography>
+                    <Typography variant="body2" sx={valueStyle}>
+                      {ev.displayValue}
+                    </Typography>
+                  </Box>
+                ))}
+                {period.events.length > 1 && (
                   <Box
                     sx={{
                       display: "flex",
@@ -225,51 +451,43 @@ export function TableGraph({ graph }: TableGraphProps) {
                       Gesamt
                     </Typography>
                     <Typography variant="body2" fontWeight="bold" sx={valueStyle}>
-                      {formatValue(category, periodTotal)}
+                      {formatValue(category, period.sum)}
                     </Typography>
                   </Box>
-                </Box>
-              ) : (
-                <Typography variant="body2" color="text.secondary" sx={{ pl: 1 }}>
-                  -
-                </Typography>
-              )}
-            </ListItem>
-          );
-        })}
+                )}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ pl: 1 }}>
+                -
+              </Typography>
+            )}
+          </ListItem>
+        ))}
       </List>
     );
   }
 
-  // Simple list without subcategories: Period | Value
-  const hasAnyData = Array.from(periodData.values()).some(
-    (periodMap) => (periodMap.get(category.id) ?? 0) > 0
-  );
-
+  // Simple list: simpleValueSingle, accumulated, protocol
+  const hasAnyData = tableData.periods.some((p) => p.sum > 0);
   if (!hasAnyData) {
     return <Typography color="text.secondary">Keine Daten</Typography>;
   }
 
   return (
     <List dense sx={{ mb: 2 }}>
-      {periods.map((period) => {
-        const periodMap = periodData.get(period.key)!;
-        const value = periodMap.get(category.id) ?? 0;
-
-        return (
-          <ListItem
-            key={period.key}
-            sx={{ display: "flex", justifyContent: "space-between", py: 0.5 }}
-          >
-            <Typography variant="body2" fontWeight="bold" sx={{ flex: 1 }}>
-              {period.label}
-            </Typography>
-            <Typography variant="body2" sx={valueStyle}>
-              {formatValue(category, value)}
-            </Typography>
-          </ListItem>
-        );
-      })}
+      {tableData.periods.map((period) => (
+        <ListItem
+          key={period.key}
+          sx={{ display: "flex", justifyContent: "space-between", py: 0.5 }}
+        >
+          <Typography variant="body2" fontWeight="bold" sx={{ flex: 1 }}>
+            {period.label}
+          </Typography>
+          <Typography variant="body2" sx={valueStyle}>
+            {formatValue(category, period.sum)}
+          </Typography>
+        </ListItem>
+      ))}
     </List>
   );
 }
