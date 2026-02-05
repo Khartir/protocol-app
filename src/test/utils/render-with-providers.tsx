@@ -4,6 +4,7 @@ import { Provider as JotaiProvider } from "jotai";
 import { ThemeProvider } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { deDE } from "@mui/x-date-pickers/locales";
 import { theme } from "../../styling/theme";
 import "dayjs/locale/de";
 
@@ -15,7 +16,11 @@ function AllProviders({ children }: { children: ReactNode }) {
   return (
     <JotaiProvider>
       <ThemeProvider theme={theme}>
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <LocalizationProvider
+          dateAdapter={AdapterDayjs}
+          adapterLocale="de"
+          localeText={deDE.components.MuiLocalizationProvider.defaultProps.localeText}
+        >
           {children}
         </LocalizationProvider>
       </ThemeProvider>

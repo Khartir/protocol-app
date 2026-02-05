@@ -7,7 +7,6 @@ import {
   useGetCategories,
 } from "../category/category";
 import { validateMeasurement } from "../measurementValidation";
-import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import { Button, Dialog, DialogContent, Stack, Alert, TextField } from "@mui/material";
 import { Event } from "../category/event";
 import { Form, Formik, useFormikContext } from "formik";
@@ -18,6 +17,8 @@ import { getDefaultUnit, toBest } from "../measure-utils";
 import { convertMany } from "convert";
 import { selectedDate } from "./atoms";
 import * as Yup from "yup";
+import { MobileTimePicker } from "@mui/x-date-pickers";
+import { CustomPickerLayout } from "./CustomPickerLayout";
 
 const validationSchema = Yup.object().shape({
   category: Yup.string().required("Pflichtfeld"),
@@ -84,12 +85,15 @@ export function EventsDialog({
               <Stack spacing={2}>
                 <AllCategorySelect />
                 <ChildCategorySelectWrapper />
-                <MobileDateTimePicker
+                <MobileTimePicker
                   label="Zeitpunkt"
                   openTo="hours"
                   value={dayjs(formik.values.timestamp)}
                   onChange={(value) => {
                     formik.setFieldValue("timestamp", value);
+                  }}
+                  slots={{
+                    layout: CustomPickerLayout,
                   }}
                   slotProps={{
                     shortcuts: {

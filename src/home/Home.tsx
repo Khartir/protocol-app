@@ -5,6 +5,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 import { TargetList } from "./TargetList";
 import { EventsList } from "./EventsList";
 import { selectedDate } from "./atoms";
+import { CustomPickerLayout } from "./CustomPickerLayout";
 
 export function Home() {
   return (
@@ -24,6 +25,9 @@ export function DateSelect() {
       <DatePicker
         value={dayjs(date)}
         sx={{ width: "10rem" }}
+        slots={{
+          layout: CustomPickerLayout,
+        }}
         onAccept={(value) => {
           if (value) {
             setDate(value.valueOf());
