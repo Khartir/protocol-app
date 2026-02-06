@@ -17,7 +17,7 @@ import { getDefaultUnit, toBest } from "../measure-utils";
 import { convertMany } from "convert";
 import { selectedDate } from "./atoms";
 import * as Yup from "yup";
-import { MobileTimePicker } from "@mui/x-date-pickers";
+import { MobileDateTimePicker, renderTimeViewClock } from "@mui/x-date-pickers";
 import { CustomPickerLayout } from "./CustomPickerLayout";
 
 const validationSchema = Yup.object().shape({
@@ -85,7 +85,7 @@ export function EventsDialog({
               <Stack spacing={2}>
                 <AllCategorySelect />
                 <ChildCategorySelectWrapper />
-                <MobileTimePicker
+                <MobileDateTimePicker
                   label="Zeitpunkt"
                   openTo="hours"
                   value={dayjs(formik.values.timestamp)}
@@ -94,6 +94,10 @@ export function EventsDialog({
                   }}
                   slots={{
                     layout: CustomPickerLayout,
+                  }}
+                  viewRenderers={{
+                    hours: renderTimeViewClock,
+                    minutes: renderTimeViewClock,
                   }}
                   slotProps={{
                     shortcuts: {

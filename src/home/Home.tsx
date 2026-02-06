@@ -28,7 +28,7 @@ export function DateSelect() {
         slots={{
           layout: CustomPickerLayout,
         }}
-        onAccept={(value) => {
+        onChange={(value) => {
           if (value) {
             setDate(value.valueOf());
           }
